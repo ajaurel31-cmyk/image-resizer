@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Batch Image Resizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
   <div class="container">
@@ -15,17 +19,15 @@
 
     <!-- Step 1: Upload -->
     <section id="upload-section" class="card">
-      <h2>1. Upload Images</h2>
+      <h2><i data-lucide="upload-cloud"></i> Upload Images</h2>
       <div id="drop-zone" class="drop-zone">
         <div class="drop-zone-content">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
+          <div class="drop-icon">
+            <i data-lucide="image-plus"></i>
+          </div>
           <p>Drag &amp; drop images here</p>
           <span class="drop-zone-or">or</span>
-          <label class="btn btn-primary" for="file-input">Browse Files</label>
+          <label class="btn btn-primary" for="file-input"><i data-lucide="folder-open"></i> Browse Files</label>
           <input type="file" id="file-input" multiple accept="image/*" hidden>
           <p class="hint">Supports JPG, PNG, WebP, BMP, GIF</p>
         </div>
@@ -35,7 +37,7 @@
 
     <!-- Step 2: Resize Settings -->
     <section id="settings-section" class="card" hidden>
-      <h2>2. Resize Settings</h2>
+      <h2><i data-lucide="sliders-horizontal"></i> Resize Settings</h2>
 
       <div class="settings-grid">
         <div class="setting-group">
@@ -92,7 +94,7 @@
 
       <!-- Text Size Guard -->
       <div class="text-guard card-inner">
-        <h3>Text Readability Guard</h3>
+        <h3><i data-lucide="scan-eye"></i> Text Readability Guard</h3>
         <p class="hint">If your images contain text, specify the original font size so we can warn you if resizing would make it unreadable. Text must stay between 50&ndash;80pt after resize.</p>
         <div class="dimension-row">
           <div>
@@ -111,10 +113,10 @@
 
     <!-- Step 3: Preview & Download -->
     <section id="preview-section" class="card" hidden>
-      <h2>3. Preview &amp; Download</h2>
+      <h2><i data-lucide="eye"></i> Preview &amp; Download</h2>
       <div class="action-bar">
-        <button id="resize-btn" class="btn btn-primary">Resize All Images</button>
-        <button id="download-all-btn" class="btn btn-secondary" hidden>Download All (ZIP)</button>
+        <button id="resize-btn" class="btn btn-primary"><i data-lucide="scaling"></i> Resize All Images</button>
+        <button id="download-all-btn" class="btn btn-secondary" hidden><i data-lucide="archive"></i> Download All (ZIP)</button>
       </div>
       <div id="progress-bar-container" class="progress-container" hidden>
         <div id="progress-bar" class="progress-bar"></div>
@@ -126,5 +128,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="app.js"></script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>
