@@ -120,6 +120,16 @@
   const fileListEl        = document.getElementById('file-list');
   const devicesSection    = document.getElementById('devices-section');
   const deviceListsEl     = document.getElementById('device-lists');
+  const captionSection    = document.getElementById('caption-section');
+  const captionEnabled    = document.getElementById('caption-enabled');
+  const captionFields     = document.getElementById('caption-fields');
+  const captionHeadline   = document.getElementById('caption-headline');
+  const captionSubtitle   = document.getElementById('caption-subtitle');
+  const captionPosition   = document.getElementById('caption-position');
+  const captionBgColor    = document.getElementById('caption-bg-color');
+  const captionTextColor  = document.getElementById('caption-text-color');
+  const captionBgHex      = document.getElementById('caption-bg-hex');
+  const captionTextHex    = document.getElementById('caption-text-hex');
   const outputSection     = document.getElementById('output-section');
   const generateBtn       = document.getElementById('generate-btn');
   const downloadAllBtn    = document.getElementById('download-all-btn');
@@ -272,12 +282,14 @@
     if (state.files.length === 0) {
       fileListEl.hidden = true;
       devicesSection.hidden = true;
+      captionSection.hidden = true;
       outputSection.hidden = true;
       return;
     }
 
     fileListEl.hidden = false;
     devicesSection.hidden = false;
+    captionSection.hidden = false;
     outputSection.hidden = false;
 
     fileListEl.innerHTML = '';
@@ -437,13 +449,151 @@
     }
   }
 
+  // ---- Caption helpers ----------------------------------------------------
+
+  function getCaptionConfig() {
+    if (!captionEnabled.checked) return null;
+    const headline = captionHeadline.value.trim();
+    if (!headline) return null;
+    return {
+      headline,
+      subtitle: captionSubtitle.value.trim(),
+      position: captionPosition.value,  // 'top' or 'bottom'
+      bgColor: captionBgColor.value,
+      textColor: captionTextColor.value,
+    };
+  }
+
+  /**
+   * Calculate font sizes based on canvas width to meet Apple readability.
+   * Apple recommends text be clearly legible on device — roughly equivalent
+   * to 40pt+ at 1x on iPhone. We scale proportionally by canvas width.
+   */
+  function getCaptionFontSizes(canvasW, canvasH) {
+    // Headline: ~5.7% of width, subtitle: ~3.3% of width
+    // These ratios produce large, readable text across all device sizes.
+    const headline = Math.max(Math.round(canvasW * 0.057), 32);
+    const subtitle = Math.max(Math.round(canvasW * 0.033), 22);
+    // Caption area height: 25% of total canvas
+    const areaHeight = Math.round(canvasH * 0.25);
+    return { headline, subtitle, areaHeight };
+  }
+
+  /**
+   * Draw caption text on canvas at the specified position.
+   * Wraps long lines to prevent text from overflowing.
+   */
+  function drawCaption(ctx, canvasW, canvasH, caption) {
+    const sizes = getCaptionFontSizes(canvasW, canvasH);
+    const position = caption.position;
+
+    // Caption area Y position
+    const areaY = position === 'top' ? 0 : canvasH - sizes.areaHeight;
+
+    // Draw background
+    ctx.fillStyle = caption.bgColor;
+    ctx.fillRect(0, areaY, canvasW, sizes.areaHeight);
+
+    // Text setup
+    ctx.fillStyle = caption.textColor;
+    ctx.textAlign = 'center';
+    const centerX = canvasW / 2;
+    const maxTextWidth = canvasW * 0.85;
+
+    // Vertical layout within caption area
+    const hasSubtitle = caption.subtitle.length > 0;
+    const lineGap = Math.round(sizes.headline * 0.35);
+
+    // Draw headline (bold)
+    ctx.font = `800 ${sizes.headline}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    const headlineLines = wrapText(ctx, caption.headline, maxTextWidth);
+
+    // Draw subtitle (regular weight)
+    ctx.font = `500 ${sizes.subtitle}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    const subtitleLines = hasSubtitle ? wrapText(ctx, caption.subtitle, maxTextWidth) : [];
+
+    // Calculate total text block height for vertical centering
+    const headlineBlockH = headlineLines.length * (sizes.headline * 1.2);
+    const subtitleBlockH = subtitleLines.length * (sizes.subtitle * 1.2);
+    const totalTextH = headlineBlockH + (hasSubtitle ? lineGap + subtitleBlockH : 0);
+    let textY = areaY + (sizes.areaHeight - totalTextH) / 2 + sizes.headline;
+
+    // Draw headline lines
+    ctx.font = `800 ${sizes.headline}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.textBaseline = 'alphabetic';
+    for (const line of headlineLines) {
+      ctx.fillText(line, centerX, textY);
+      textY += sizes.headline * 1.2;
+    }
+
+    // Draw subtitle lines
+    if (hasSubtitle) {
+      textY += lineGap - sizes.headline * 0.2;
+      ctx.font = `500 ${sizes.subtitle}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      for (const line of subtitleLines) {
+        ctx.fillText(line, centerX, textY);
+        textY += sizes.subtitle * 1.2;
+      }
+    }
+  }
+
+  /**
+   * Word-wrap text into lines that fit within maxWidth.
+   */
+  function wrapText(ctx, text, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let current = '';
+
+    for (const word of words) {
+      const test = current ? current + ' ' + word : word;
+      if (ctx.measureText(test).width > maxWidth && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    }
+    if (current) lines.push(current);
+    return lines;
+  }
+
   // ---- Generate screenshots for one source + one device -------------------
 
   function generateScreenshot(entry, device) {
     return new Promise((resolve) => {
       const { w, h } = getDimensions(device);
       const method = resizeMethod.value;
-      const canvas = resizeToCanvas(entry.img, w, h, method);
+      const caption = getCaptionConfig();
+
+      let canvas;
+      if (caption) {
+        // With caption: allocate 25% to text area, 75% to image
+        const sizes = getCaptionFontSizes(w, h);
+        const imgH = h - sizes.areaHeight;
+
+        // Resize image to fit the image portion of the canvas
+        const imgCanvas = resizeToCanvas(entry.img, w, imgH, method);
+
+        // Create final canvas at full device dimensions
+        canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+
+        // Fill entire canvas with caption background (avoids gaps)
+        ctx.fillStyle = caption.bgColor;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw image in the non-caption area
+        const imgY = caption.position === 'top' ? sizes.areaHeight : 0;
+        ctx.drawImage(imgCanvas, 0, imgY);
+
+        // Draw caption text
+        drawCaption(ctx, w, h, caption);
+      } else {
+        canvas = resizeToCanvas(entry.img, w, h, method);
+      }
 
       let mime = outputFormat.value;
       const quality = parseInt(qualitySlider.value, 10) / 100;
@@ -627,6 +777,20 @@
     state.files.push(...entries);
     renderFileList();
   }
+
+  // Caption toggle & color sync
+  captionEnabled.addEventListener('change', () => {
+    captionFields.hidden = !captionEnabled.checked;
+    if (window.lucide) lucide.createIcons();
+  });
+
+  captionBgColor.addEventListener('input', () => {
+    captionBgHex.textContent = captionBgColor.value;
+  });
+
+  captionTextColor.addEventListener('input', () => {
+    captionTextHex.textContent = captionTextColor.value;
+  });
 
   // Quality slider
   qualitySlider.addEventListener('input', () => {
