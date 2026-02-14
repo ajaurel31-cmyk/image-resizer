@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Image Resizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Batch Image Resizer</h1>
+      <p class="subtitle">Upload multiple images, resize them, and keep text readable.</p>
+    </header>
+
+    <!-- Step 1: Upload -->
+    <section id="upload-section" class="card">
+      <h2>1. Upload Images</h2>
+      <div id="drop-zone" class="drop-zone">
+        <div class="drop-zone-content">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Drag &amp; drop images here</p>
+          <span class="drop-zone-or">or</span>
+          <label class="btn btn-primary" for="file-input">Browse Files</label>
+          <input type="file" id="file-input" multiple accept="image/*" hidden>
+          <p class="hint">Supports JPG, PNG, WebP, BMP, GIF</p>
+        </div>
+      </div>
+      <div id="file-list" class="file-list" hidden></div>
+    </section>
+
+    <!-- Step 2: Resize Settings -->
+    <section id="settings-section" class="card" hidden>
+      <h2>2. Resize Settings</h2>
+
+      <div class="settings-grid">
+        <div class="setting-group">
+          <label>Resize Mode</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="resize-mode" value="dimensions" checked>
+              <span>By Dimensions (px)</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="resize-mode" value="percentage">
+              <span>By Percentage (%)</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="dimensions-inputs" class="setting-group">
+          <div class="dimension-row">
+            <div>
+              <label for="target-width">Width (px)</label>
+              <input type="number" id="target-width" min="1" max="10000" placeholder="e.g. 1920">
+            </div>
+            <div>
+              <label for="target-height">Height (px)</label>
+              <input type="number" id="target-height" min="1" max="10000" placeholder="e.g. 1080">
+            </div>
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="maintain-aspect" checked>
+            <span>Maintain aspect ratio</span>
+          </label>
+        </div>
+
+        <div id="percentage-inputs" class="setting-group" hidden>
+          <label for="scale-percent">Scale (%)</label>
+          <input type="number" id="scale-percent" min="1" max="1000" value="50" placeholder="e.g. 50">
+        </div>
+
+        <div class="setting-group">
+          <label for="output-format">Output Format</label>
+          <select id="output-format">
+            <option value="original">Same as original</option>
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WebP</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label for="quality-slider">Quality: <span id="quality-value">90</span>%</label>
+          <input type="range" id="quality-slider" min="10" max="100" value="90">
+        </div>
+      </div>
+
+      <!-- Text Size Guard -->
+      <div class="text-guard card-inner">
+        <h3>Text Readability Guard</h3>
+        <p class="hint">If your images contain text, specify the original font size so we can warn you if resizing would make it unreadable. Text must stay between 50&ndash;80pt after resize.</p>
+        <div class="dimension-row">
+          <div>
+            <label for="original-text-size">Original Text Size (pt)</label>
+            <input type="number" id="original-text-size" min="1" max="1000" placeholder="e.g. 72">
+          </div>
+          <div>
+            <label for="original-dpi">Image DPI</label>
+            <input type="number" id="original-dpi" min="1" max="2400" value="72" placeholder="e.g. 72">
+          </div>
+        </div>
+        <div id="text-size-warning" class="warning" hidden></div>
+        <div id="text-size-ok" class="success" hidden></div>
+      </div>
+    </section>
+
+    <!-- Step 3: Preview & Download -->
+    <section id="preview-section" class="card" hidden>
+      <h2>3. Preview &amp; Download</h2>
+      <div class="action-bar">
+        <button id="resize-btn" class="btn btn-primary">Resize All Images</button>
+        <button id="download-all-btn" class="btn btn-secondary" hidden>Download All (ZIP)</button>
+      </div>
+      <div id="progress-bar-container" class="progress-container" hidden>
+        <div id="progress-bar" class="progress-bar"></div>
+        <span id="progress-text">0%</span>
+      </div>
+      <div id="preview-grid" class="preview-grid"></div>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
