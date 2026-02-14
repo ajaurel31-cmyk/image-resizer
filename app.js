@@ -400,7 +400,7 @@
   });
 
   dropZone.addEventListener('click', (e) => {
-    if (e.target.tagName !== 'INPUT') fileInput.click();
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') fileInput.click();
   });
 
   fileInput.addEventListener('change', async () => {
