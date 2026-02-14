@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batch Image Resizer</title>
+  <title>App Store Screenshot Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,116 +13,100 @@
 <body>
   <div class="container">
     <header>
-      <h1>Batch Image Resizer</h1>
-      <p class="subtitle">Upload multiple images, resize them, and keep text readable.</p>
+      <h1>App Store Screenshot Generator</h1>
+      <p class="subtitle">Upload your source images and generate properly sized screenshots for App Store Connect.</p>
     </header>
 
     <!-- Step 1: Upload -->
     <section id="upload-section" class="card">
-      <h2><i data-lucide="upload-cloud"></i> Upload Images</h2>
+      <h2><i data-lucide="upload-cloud"></i> Source Images</h2>
       <div id="drop-zone" class="drop-zone">
         <div class="drop-zone-content">
           <div class="drop-icon">
             <i data-lucide="image-plus"></i>
           </div>
-          <p>Drag &amp; drop images here</p>
+          <p>Drag &amp; drop your source screenshots here</p>
           <span class="drop-zone-or">or</span>
           <label class="btn btn-primary" for="file-input"><i data-lucide="folder-open"></i> Browse Files</label>
-          <input type="file" id="file-input" multiple accept="image/*" hidden>
-          <p class="hint">Supports JPG, PNG, WebP, BMP, GIF</p>
+          <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/jpg" hidden>
+          <p class="hint">PNG or JPEG only &mdash; RGB, no transparency (App Store requirement)</p>
         </div>
       </div>
       <div id="file-list" class="file-list" hidden></div>
     </section>
 
-    <!-- Step 2: Resize Settings -->
-    <section id="settings-section" class="card" hidden>
-      <h2><i data-lucide="sliders-horizontal"></i> Resize Settings</h2>
+    <!-- Step 2: Device Selection -->
+    <section id="devices-section" class="card" hidden>
+      <h2><i data-lucide="smartphone"></i> Target Devices</h2>
+      <p class="section-desc">Select which device sizes to generate. Required sizes are pre-checked.</p>
 
-      <div class="settings-grid">
-        <div class="setting-group">
-          <label>Resize Mode</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="resize-mode" value="dimensions" checked>
-              <span>By Dimensions (px)</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="resize-mode" value="percentage">
-              <span>By Percentage (%)</span>
-            </label>
-          </div>
-        </div>
+      <!-- Platform tabs -->
+      <div class="platform-tabs">
+        <button class="platform-tab active" data-platform="iphone"><i data-lucide="smartphone"></i> iPhone</button>
+        <button class="platform-tab" data-platform="ipad"><i data-lucide="tablet"></i> iPad</button>
+        <button class="platform-tab" data-platform="mac"><i data-lucide="monitor"></i> Mac</button>
+        <button class="platform-tab" data-platform="watch"><i data-lucide="watch"></i> Watch</button>
+        <button class="platform-tab" data-platform="tv"><i data-lucide="tv"></i> Apple TV</button>
+        <button class="platform-tab" data-platform="vision"><i data-lucide="glasses"></i> Vision Pro</button>
+      </div>
 
-        <div id="dimensions-inputs" class="setting-group">
-          <div class="dimension-row">
-            <div>
-              <label for="target-width">Width (px)</label>
-              <input type="number" id="target-width" min="1" max="10000" placeholder="e.g. 1920">
-            </div>
-            <div>
-              <label for="target-height">Height (px)</label>
-              <input type="number" id="target-height" min="1" max="10000" placeholder="e.g. 1080">
-            </div>
-          </div>
-          <label class="checkbox-label">
-            <input type="checkbox" id="maintain-aspect" checked>
-            <span>Maintain aspect ratio</span>
+      <div id="device-lists">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Orientation -->
+      <div class="setting-group orientation-group">
+        <label>Orientation</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="orientation" value="portrait" checked>
+            <span>Portrait</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="orientation" value="landscape">
+            <span>Landscape</span>
           </label>
         </div>
+      </div>
 
-        <div id="percentage-inputs" class="setting-group" hidden>
-          <label for="scale-percent">Scale (%)</label>
-          <input type="number" id="scale-percent" min="1" max="1000" value="50" placeholder="e.g. 50">
-        </div>
-
+      <!-- Output settings -->
+      <div class="settings-row">
         <div class="setting-group">
           <label for="output-format">Output Format</label>
           <select id="output-format">
-            <option value="original">Same as original</option>
+            <option value="image/png">PNG (recommended)</option>
             <option value="image/jpeg">JPEG</option>
-            <option value="image/png">PNG</option>
-            <option value="image/webp">WebP</option>
           </select>
         </div>
-
         <div class="setting-group">
-          <label for="quality-slider">Quality: <span id="quality-value">90</span>%</label>
-          <input type="range" id="quality-slider" min="10" max="100" value="90">
+          <label for="quality-slider">JPEG Quality: <span id="quality-value">92</span>%</label>
+          <input type="range" id="quality-slider" min="60" max="100" value="92">
+        </div>
+        <div class="setting-group">
+          <label for="resize-method">Resize Method</label>
+          <select id="resize-method">
+            <option value="fit">Fit (letterbox)</option>
+            <option value="fill">Fill (crop center)</option>
+            <option value="stretch">Stretch to exact size</option>
+          </select>
         </div>
       </div>
 
-      <!-- Text Size Guard -->
-      <div class="text-guard card-inner">
-        <h3><i data-lucide="scan-eye"></i> Text Readability Guard</h3>
-        <p class="hint">If your images contain text, specify the original font size so we can warn you if resizing would make it unreadable. Text must stay between 50&ndash;80pt after resize.</p>
-        <div class="dimension-row">
-          <div>
-            <label for="original-text-size">Original Text Size (pt)</label>
-            <input type="number" id="original-text-size" min="1" max="1000" placeholder="e.g. 72">
-          </div>
-          <div>
-            <label for="original-dpi">Image DPI</label>
-            <input type="number" id="original-dpi" min="1" max="2400" value="72" placeholder="e.g. 72">
-          </div>
-        </div>
-        <div id="text-size-warning" class="warning" hidden></div>
-        <div id="text-size-ok" class="success" hidden></div>
-      </div>
+      <div id="size-warning" class="warning" hidden></div>
     </section>
 
-    <!-- Step 3: Preview & Download -->
-    <section id="preview-section" class="card" hidden>
-      <h2><i data-lucide="eye"></i> Preview &amp; Download</h2>
+    <!-- Step 3: Generate & Download -->
+    <section id="output-section" class="card" hidden>
+      <h2><i data-lucide="sparkles"></i> Generate &amp; Download</h2>
       <div class="action-bar">
-        <button id="resize-btn" class="btn btn-primary"><i data-lucide="scaling"></i> Resize All Images</button>
+        <button id="generate-btn" class="btn btn-primary"><i data-lucide="wand-2"></i> Generate All Screenshots</button>
         <button id="download-all-btn" class="btn btn-secondary" hidden><i data-lucide="archive"></i> Download All (ZIP)</button>
       </div>
       <div id="progress-bar-container" class="progress-container" hidden>
         <div id="progress-bar" class="progress-bar"></div>
         <span id="progress-text">0%</span>
       </div>
-      <div id="preview-grid" class="preview-grid"></div>
+      <div id="output-grid" class="output-grid"></div>
     </section>
   </div>
 

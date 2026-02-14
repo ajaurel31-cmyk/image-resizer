@@ -1,43 +1,139 @@
 // ---------------------------------------------------------------------------
-// Batch Image Resizer – app.js
+// App Store Screenshot Generator – app.js
+// All device specs from Apple's official App Store Connect documentation.
 // ---------------------------------------------------------------------------
 
 (function () {
   'use strict';
 
-  // ---- State ---------------------------------------------------------------
+  // ---- App Store Connect Device Specifications ----------------------------
+  // Each entry: { id, name, platform, portrait: [w,h], models, badge? }
+  // "badge" can be "required" or "recommended"; required are pre-checked.
+
+  const DEVICES = [
+    // --- iPhone ---
+    { id: 'iphone_6_9', name: 'iPhone 6.9″', platform: 'iphone', portrait: [1260, 2736],
+      models: 'iPhone Air, 17 Pro Max, 16 Pro Max, 16 Plus, 15 Pro Max, 15 Plus, 14 Pro Max',
+      badge: 'required' },
+    { id: 'iphone_6_5', name: 'iPhone 6.5″', platform: 'iphone', portrait: [1284, 2778],
+      models: 'iPhone 14 Plus, 13 Pro Max, 12 Pro Max, 11 Pro Max, XS Max, XR',
+      badge: null },
+    { id: 'iphone_6_5_alt', name: 'iPhone 6.5″ (alt)', platform: 'iphone', portrait: [1242, 2688],
+      models: 'iPhone 11 Pro Max, XS Max (alternative size)',
+      badge: null },
+    { id: 'iphone_6_3', name: 'iPhone 6.3″', platform: 'iphone', portrait: [1206, 2622],
+      models: 'iPhone 17 Pro, 17, 16 Pro, 16, 15 Pro, 15, 14 Pro',
+      badge: null },
+    { id: 'iphone_6_3_alt', name: 'iPhone 6.3″ (alt)', platform: 'iphone', portrait: [1179, 2556],
+      models: 'iPhone 16 Pro, 15 Pro, 15, 14 Pro (alternative size)',
+      badge: null },
+    { id: 'iphone_6_1', name: 'iPhone 6.1″', platform: 'iphone', portrait: [1170, 2532],
+      models: 'iPhone 14, 13 Pro, 13, 12 Pro, 12',
+      badge: null },
+    { id: 'iphone_5_5', name: 'iPhone 5.5″', platform: 'iphone', portrait: [1242, 2208],
+      models: 'iPhone 8 Plus, 7 Plus, 6s Plus',
+      badge: 'recommended' },
+    { id: 'iphone_4_7', name: 'iPhone 4.7″', platform: 'iphone', portrait: [750, 1334],
+      models: 'iPhone SE (3rd/2nd), 8, 7, 6s',
+      badge: null },
+
+    // --- iPad ---
+    { id: 'ipad_13', name: 'iPad 13″', platform: 'ipad', portrait: [2064, 2752],
+      models: 'iPad Pro (M5/M4/6th–1st gen), iPad Air (M3/M2)',
+      badge: 'required' },
+    { id: 'ipad_13_alt', name: 'iPad 13″ (alt)', platform: 'ipad', portrait: [2048, 2732],
+      models: 'iPad Pro 12.9″ (all generations)',
+      badge: null },
+    { id: 'ipad_11', name: 'iPad 11″', platform: 'ipad', portrait: [1488, 2266],
+      models: 'iPad Pro 11″ (M5/M4), iPad Air (M3/M2), iPad mini (A17)',
+      badge: null },
+    { id: 'ipad_11_alt1', name: 'iPad 11″ (2388)', platform: 'ipad', portrait: [1668, 2388],
+      models: 'iPad Pro 11″ (1st–3rd gen)',
+      badge: null },
+    { id: 'ipad_11_alt2', name: 'iPad 11″ (2420)', platform: 'ipad', portrait: [1668, 2420],
+      models: 'iPad Air (4th/5th gen)',
+      badge: null },
+    { id: 'ipad_10_5', name: 'iPad 10.5″', platform: 'ipad', portrait: [1668, 2224],
+      models: 'iPad Pro 10.5″, iPad Air (3rd), iPad (9th–7th)',
+      badge: null },
+    { id: 'ipad_9_7', name: 'iPad 9.7″', platform: 'ipad', portrait: [1536, 2048],
+      models: 'iPad Pro 9.7″, iPad Air 1/2, iPad mini 2–5',
+      badge: null },
+
+    // --- Mac ---
+    { id: 'mac_2880', name: 'Mac Retina 15″', platform: 'mac', portrait: [2880, 1800],
+      models: 'MacBook Pro 15″ Retina', badge: 'recommended' },
+    { id: 'mac_2560', name: 'Mac Retina 13″', platform: 'mac', portrait: [2560, 1600],
+      models: 'MacBook Pro/Air 13″ Retina', badge: 'required' },
+    { id: 'mac_1440', name: 'Mac 1440×900', platform: 'mac', portrait: [1440, 900],
+      models: 'MacBook Air / older displays', badge: null },
+    { id: 'mac_1280', name: 'Mac 1280×800', platform: 'mac', portrait: [1280, 800],
+      models: 'Minimum accepted size', badge: null },
+
+    // --- Apple Watch ---
+    { id: 'watch_ultra3', name: 'Watch Ultra 3', platform: 'watch', portrait: [422, 514],
+      models: 'Apple Watch Ultra 3', badge: null },
+    { id: 'watch_ultra2', name: 'Watch Ultra 2/Ultra', platform: 'watch', portrait: [410, 502],
+      models: 'Apple Watch Ultra 2, Ultra', badge: null },
+    { id: 'watch_s11_s10', name: 'Watch Series 11/10', platform: 'watch', portrait: [416, 496],
+      models: 'Apple Watch Series 11, 10', badge: 'required' },
+    { id: 'watch_s9_s7', name: 'Watch Series 9–7', platform: 'watch', portrait: [396, 484],
+      models: 'Apple Watch Series 9, 8, 7', badge: null },
+    { id: 'watch_s6_se', name: 'Watch Series 6–4/SE', platform: 'watch', portrait: [368, 448],
+      models: 'Apple Watch Series 6–4, SE 3, SE', badge: null },
+    { id: 'watch_s3', name: 'Watch Series 3', platform: 'watch', portrait: [312, 390],
+      models: 'Apple Watch Series 3', badge: null },
+
+    // --- Apple TV ---
+    { id: 'tv_4k', name: 'Apple TV 4K', platform: 'tv', portrait: [3840, 2160],
+      models: 'Apple TV 4K', badge: 'required' },
+    { id: 'tv_1080', name: 'Apple TV 1080p', platform: 'tv', portrait: [1920, 1080],
+      models: 'Apple TV HD', badge: null },
+
+    // --- Apple Vision Pro ---
+    { id: 'vision_pro', name: 'Apple Vision Pro', platform: 'vision', portrait: [3840, 2160],
+      models: 'Apple Vision Pro', badge: 'required' },
+  ];
+
+  const PLATFORMS = [
+    { id: 'iphone', label: 'iPhone' },
+    { id: 'ipad',   label: 'iPad' },
+    { id: 'mac',    label: 'Mac' },
+    { id: 'watch',  label: 'Apple Watch' },
+    { id: 'tv',     label: 'Apple TV' },
+    { id: 'vision', label: 'Vision Pro' },
+  ];
+
+  // Platforms where orientation toggle doesn't apply (fixed aspect)
+  const FIXED_ORIENTATION_PLATFORMS = new Set(['mac', 'watch', 'tv', 'vision']);
+
+  // ---- State --------------------------------------------------------------
   const state = {
-    files: [],       // { file, img, objectUrl }
-    resized: [],     // { blob, name, width, height, originalName }
+    files: [],          // { file, img, objectUrl }
+    generated: [],      // { blob, name, width, height, deviceName, sourceFile }
+    activePlatform: 'iphone',
   };
 
-  // ---- DOM refs ------------------------------------------------------------
+  // ---- DOM refs -----------------------------------------------------------
   const dropZone          = document.getElementById('drop-zone');
   const fileInput         = document.getElementById('file-input');
   const fileListEl        = document.getElementById('file-list');
-  const settingsSection   = document.getElementById('settings-section');
-  const previewSection    = document.getElementById('preview-section');
-  const resizeBtn         = document.getElementById('resize-btn');
+  const devicesSection    = document.getElementById('devices-section');
+  const deviceListsEl     = document.getElementById('device-lists');
+  const outputSection     = document.getElementById('output-section');
+  const generateBtn       = document.getElementById('generate-btn');
   const downloadAllBtn    = document.getElementById('download-all-btn');
   const progressContainer = document.getElementById('progress-bar-container');
   const progressBar       = document.getElementById('progress-bar');
   const progressText      = document.getElementById('progress-text');
-  const previewGrid       = document.getElementById('preview-grid');
+  const outputGrid        = document.getElementById('output-grid');
   const qualitySlider     = document.getElementById('quality-slider');
   const qualityValue      = document.getElementById('quality-value');
-  const targetWidth       = document.getElementById('target-width');
-  const targetHeight      = document.getElementById('target-height');
-  const maintainAspect    = document.getElementById('maintain-aspect');
-  const scalePercent      = document.getElementById('scale-percent');
   const outputFormat      = document.getElementById('output-format');
-  const originalTextSize  = document.getElementById('original-text-size');
-  const originalDpi       = document.getElementById('original-dpi');
-  const textSizeWarning   = document.getElementById('text-size-warning');
-  const textSizeOk        = document.getElementById('text-size-ok');
-  const dimensionsInputs  = document.getElementById('dimensions-inputs');
-  const percentageInputs  = document.getElementById('percentage-inputs');
+  const resizeMethod      = document.getElementById('resize-method');
+  const sizeWarning       = document.getElementById('size-warning');
 
-  // ---- Helpers -------------------------------------------------------------
+  // ---- Helpers ------------------------------------------------------------
 
   function formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -46,15 +142,35 @@
   }
 
   function mimeToExt(mime) {
-    const map = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/bmp': '.bmp', 'image/gif': '.gif' };
-    return map[mime] || '.png';
+    return mime === 'image/jpeg' ? '.jpg' : '.png';
   }
 
-  function getResizeMode() {
-    return document.querySelector('input[name="resize-mode"]:checked').value;
+  function getOrientation() {
+    return document.querySelector('input[name="orientation"]:checked').value;
   }
 
-  /** Load a File into an HTMLImageElement, return a promise. */
+  function getSelectedDevices() {
+    const checked = [];
+    document.querySelectorAll('.device-checkbox:checked').forEach(cb => {
+      const dev = DEVICES.find(d => d.id === cb.value);
+      if (dev) checked.push(dev);
+    });
+    return checked;
+  }
+
+  function getDimensions(device) {
+    const [pw, ph] = device.portrait;
+    const orientation = getOrientation();
+    // Mac, Watch, TV, Vision: always use the spec dimensions as-is
+    if (FIXED_ORIENTATION_PLATFORMS.has(device.platform)) {
+      return { w: pw, h: ph };
+    }
+    if (orientation === 'landscape') {
+      return { w: ph, h: pw };
+    }
+    return { w: pw, h: ph };
+  }
+
   function loadImage(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -65,183 +181,107 @@
     });
   }
 
-  // ---- Compute target size for one image -----------------------------------
+  // ---- Build device selection UI ------------------------------------------
 
-  function computeTarget(img) {
-    const mode = getResizeMode();
-    let w, h;
+  function buildDeviceLists() {
+    deviceListsEl.innerHTML = '';
 
-    if (mode === 'percentage') {
-      const pct = parseFloat(scalePercent.value) || 100;
-      w = Math.round(img.naturalWidth * pct / 100);
-      h = Math.round(img.naturalHeight * pct / 100);
-    } else {
-      const tw = parseInt(targetWidth.value, 10);
-      const th = parseInt(targetHeight.value, 10);
+    PLATFORMS.forEach(platform => {
+      const listDiv = document.createElement('div');
+      listDiv.className = 'device-list' + (platform.id === 'iphone' ? ' active' : '');
+      listDiv.dataset.platform = platform.id;
 
-      if (tw && th && !maintainAspect.checked) {
-        w = tw;
-        h = th;
-      } else if (tw && !th) {
-        w = tw;
-        h = Math.round(img.naturalHeight * (tw / img.naturalWidth));
-      } else if (!tw && th) {
-        h = th;
-        w = Math.round(img.naturalWidth * (th / img.naturalHeight));
-      } else if (tw && th && maintainAspect.checked) {
-        const ratio = Math.min(tw / img.naturalWidth, th / img.naturalHeight);
-        w = Math.round(img.naturalWidth * ratio);
-        h = Math.round(img.naturalHeight * ratio);
-      } else {
-        w = img.naturalWidth;
-        h = img.naturalHeight;
-      }
-    }
+      const devices = DEVICES.filter(d => d.platform === platform.id);
+      devices.forEach(device => {
+        const row = document.createElement('label');
+        row.className = 'device-option';
 
-    return { w: Math.max(1, w), h: Math.max(1, h) };
-  }
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'device-checkbox';
+        cb.value = device.id;
+        if (device.badge === 'required' || device.badge === 'recommended') {
+          cb.checked = true;
+        }
 
-  // ---- Scale factor for the first image (used for text‑size guard) ---------
+        const info = document.createElement('div');
+        info.className = 'device-option-info';
 
-  function getScaleFactor() {
-    if (state.files.length === 0) return 1;
-    const { img } = state.files[0];
-    const { w } = computeTarget(img);
-    return w / img.naturalWidth;
-  }
+        const { w, h } = getDimensions(device);
+        info.innerHTML =
+          `<div class="device-option-name">${device.name}</div>` +
+          `<div class="device-option-meta">${w} &times; ${h} &mdash; ${device.models}</div>`;
 
-  // ---- Text readability check ----------------------------------------------
+        row.appendChild(cb);
+        row.appendChild(info);
 
-  const MIN_PT = 50;
-  const MAX_PT = 80;
+        if (device.badge) {
+          const badge = document.createElement('span');
+          badge.className = 'badge badge-' + device.badge;
+          badge.textContent = device.badge;
+          row.appendChild(badge);
+        }
 
-  function checkTextSize() {
-    const origPt = parseFloat(originalTextSize.value);
-    if (!origPt || origPt <= 0) {
-      textSizeWarning.hidden = true;
-      textSizeOk.hidden = true;
-      return true; // nothing to validate
-    }
+        listDiv.appendChild(row);
+      });
 
-    const scale = getScaleFactor();
-    const resultPt = origPt * scale;
-
-    if (resultPt < MIN_PT) {
-      textSizeWarning.hidden = false;
-      textSizeOk.hidden = true;
-      const minScale = (MIN_PT / origPt * 100).toFixed(0);
-      const maxScale = (MAX_PT / origPt * 100).toFixed(0);
-      textSizeWarning.textContent =
-        `Warning: After resizing, text would be ~${resultPt.toFixed(1)}pt — below the ${MIN_PT}pt minimum. ` +
-        `Scale between ${minScale}%–${maxScale}% to keep text between ${MIN_PT}–${MAX_PT}pt.`;
-      return false;
-    }
-
-    if (resultPt > MAX_PT) {
-      textSizeWarning.hidden = false;
-      textSizeOk.hidden = true;
-      const minScale = (MIN_PT / origPt * 100).toFixed(0);
-      const maxScale = (MAX_PT / origPt * 100).toFixed(0);
-      textSizeWarning.textContent =
-        `Warning: After resizing, text would be ~${resultPt.toFixed(1)}pt — above the ${MAX_PT}pt maximum. ` +
-        `Scale between ${minScale}%–${maxScale}% to keep text between ${MIN_PT}–${MAX_PT}pt.`;
-      return false;
-    }
-
-    textSizeWarning.hidden = true;
-    textSizeOk.hidden = false;
-    textSizeOk.textContent =
-      `Text will be ~${resultPt.toFixed(1)}pt after resize — within the readable ${MIN_PT}–${MAX_PT}pt range.`;
-    return true;
-  }
-
-  // ---- Resize a single image via OffscreenCanvas / Canvas ------------------
-
-  function resizeImage({ file, img }, targetW, targetH) {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = targetW;
-      canvas.height = targetH;
-      const ctx = canvas.getContext('2d');
-
-      // Use high‑quality interpolation
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-
-      // For large down‑scales, do a multi‑step resize (halving) to preserve
-      // sharpness — especially important for text readability.
-      stepDownDraw(ctx, img, img.naturalWidth, img.naturalHeight, targetW, targetH);
-
-      let mime = outputFormat.value;
-      if (mime === 'original') {
-        mime = file.type || 'image/png';
-      }
-      const quality = parseInt(qualitySlider.value, 10) / 100;
-
-      canvas.toBlob((blob) => {
-        const ext = mimeToExt(mime);
-        const baseName = file.name.replace(/\.[^.]+$/, '');
-        resolve({
-          blob,
-          name: `${baseName}_resized${ext}`,
-          width: targetW,
-          height: targetH,
-          originalName: file.name,
-        });
-      }, mime, quality);
+      deviceListsEl.appendChild(listDiv);
     });
   }
 
-  /**
-   * Multi‑step (halving) draw to maintain sharpness on large down‑scales.
-   * Repeatedly halves the source until the next halving would undershoot the
-   * target, then does a final draw to exact target dimensions.
-   */
-  function stepDownDraw(ctx, source, srcW, srcH, destW, destH) {
-    // If scale‑down ratio > 2x in either dimension, use step‑down
-    if (srcW / destW > 2 || srcH / destH > 2) {
-      const tempCanvas = document.createElement('canvas');
-      let curW = srcW;
-      let curH = srcH;
-      let curSource = source;
-
-      while (curW / destW > 2 || curH / destH > 2) {
-        const nextW = Math.max(Math.round(curW / 2), destW);
-        const nextH = Math.max(Math.round(curH / 2), destH);
-        tempCanvas.width = nextW;
-        tempCanvas.height = nextH;
-        const tCtx = tempCanvas.getContext('2d');
-        tCtx.imageSmoothingEnabled = true;
-        tCtx.imageSmoothingQuality = 'high';
-        tCtx.drawImage(curSource, 0, 0, curW, curH, 0, 0, nextW, nextH);
-        curSource = tempCanvas;
-        curW = nextW;
-        curH = nextH;
-      }
-
-      ctx.drawImage(curSource, 0, 0, curW, curH, 0, 0, destW, destH);
-    } else {
-      ctx.drawImage(source, 0, 0, srcW, srcH, 0, 0, destW, destH);
-    }
+  function updateDeviceDimensions() {
+    document.querySelectorAll('.device-option').forEach(row => {
+      const cb = row.querySelector('.device-checkbox');
+      const device = DEVICES.find(d => d.id === cb.value);
+      if (!device) return;
+      const { w, h } = getDimensions(device);
+      const metaEl = row.querySelector('.device-option-meta');
+      metaEl.innerHTML = `${w} &times; ${h} &mdash; ${device.models}`;
+    });
   }
 
-  // ---- Render file list ----------------------------------------------------
+  // ---- Platform tab switching ---------------------------------------------
+
+  document.querySelector('.platform-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.platform-tab');
+    if (!tab) return;
+
+    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    const platform = tab.dataset.platform;
+    state.activePlatform = platform;
+
+    document.querySelectorAll('.device-list').forEach(dl => dl.classList.remove('active'));
+    const target = document.querySelector(`.device-list[data-platform="${platform}"]`);
+    if (target) target.classList.add('active');
+  });
+
+  // ---- Orientation change -------------------------------------------------
+
+  document.querySelectorAll('input[name="orientation"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      updateDeviceDimensions();
+      checkSizeWarnings();
+    });
+  });
+
+  // ---- Render file list ---------------------------------------------------
 
   function renderFileList() {
     if (state.files.length === 0) {
       fileListEl.hidden = true;
-      settingsSection.hidden = true;
-      previewSection.hidden = true;
+      devicesSection.hidden = true;
+      outputSection.hidden = true;
       return;
     }
 
     fileListEl.hidden = false;
-    settingsSection.hidden = false;
-    previewSection.hidden = false;
+    devicesSection.hidden = false;
+    outputSection.hidden = false;
 
     fileListEl.innerHTML = '';
 
-    // Header
     const header = document.createElement('div');
     header.className = 'file-list-header';
     header.innerHTML = `<span>${state.files.length} image${state.files.length > 1 ? 's' : ''} selected</span>`;
@@ -269,7 +309,7 @@
       info.className = 'file-info';
       info.innerHTML =
         `<div class="file-name">${entry.file.name}</div>` +
-        `<div class="file-meta">${entry.img.naturalWidth} x ${entry.img.naturalHeight} &middot; ${formatBytes(entry.file.size)}</div>`;
+        `<div class="file-meta">${entry.img.naturalWidth} &times; ${entry.img.naturalHeight} &middot; ${formatBytes(entry.file.size)}</div>`;
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'file-remove';
@@ -285,36 +325,236 @@
       fileListEl.appendChild(div);
     });
 
-    checkTextSize();
+    checkSizeWarnings();
+    // Re-init Lucide icons for dynamically created elements
+    if (window.lucide) lucide.createIcons();
   }
 
-  // ---- Render preview grid after resize ------------------------------------
+  // ---- Size warnings ------------------------------------------------------
 
-  function renderPreviews() {
-    previewGrid.innerHTML = '';
-    state.resized.forEach((entry) => {
-      const card = document.createElement('div');
-      card.className = 'preview-card';
+  function checkSizeWarnings() {
+    if (state.files.length === 0) {
+      sizeWarning.hidden = true;
+      return;
+    }
 
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(entry.blob);
-      img.alt = entry.name;
+    const selectedDevices = getSelectedDevices();
+    if (selectedDevices.length === 0) {
+      sizeWarning.hidden = true;
+      return;
+    }
 
-      const body = document.createElement('div');
-      body.className = 'preview-card-body';
-      body.innerHTML =
-        `<div class="file-name">${entry.name}</div>` +
-        `<div class="file-meta">${entry.width} x ${entry.height} &middot; ${formatBytes(entry.blob.size)}</div>`;
+    const warnings = [];
+    for (const entry of state.files) {
+      const srcW = entry.img.naturalWidth;
+      const srcH = entry.img.naturalHeight;
+      for (const device of selectedDevices) {
+        const { w, h } = getDimensions(device);
+        // Warn if upscaling significantly (source is much smaller than target)
+        if (srcW < w * 0.5 || srcH < h * 0.5) {
+          warnings.push(`"${entry.file.name}" (${srcW}×${srcH}) is much smaller than ${device.name} (${w}×${h}) — output may look blurry.`);
+        }
+      }
+    }
 
-      const dlBtn = document.createElement('button');
-      dlBtn.className = 'btn btn-secondary btn-sm';
-      dlBtn.textContent = 'Download';
-      dlBtn.addEventListener('click', () => downloadBlob(entry.blob, entry.name));
-      body.appendChild(dlBtn);
+    if (warnings.length > 0) {
+      sizeWarning.hidden = false;
+      sizeWarning.textContent = warnings.slice(0, 3).join(' ');
+      if (warnings.length > 3) {
+        sizeWarning.textContent += ` …and ${warnings.length - 3} more warning(s).`;
+      }
+    } else {
+      sizeWarning.hidden = true;
+    }
+  }
 
-      card.append(img, body);
-      previewGrid.appendChild(card);
+  // ---- Canvas resize with multi-step down-scaling -------------------------
+
+  function resizeToCanvas(img, targetW, targetH, method) {
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    const srcW = img.naturalWidth;
+    const srcH = img.naturalHeight;
+
+    if (method === 'stretch') {
+      // Stretch source to fill target exactly
+      stepDownDraw(ctx, img, srcW, srcH, targetW, targetH);
+    } else if (method === 'fill') {
+      // Crop center: fill entire target, clip overflow
+      const scale = Math.max(targetW / srcW, targetH / srcH);
+      const sw = targetW / scale;
+      const sh = targetH / scale;
+      const sx = (srcW - sw) / 2;
+      const sy = (srcH - sh) / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+    } else {
+      // Fit: letterbox with white background (no transparency allowed)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, targetW, targetH);
+      const scale = Math.min(targetW / srcW, targetH / srcH);
+      const dw = Math.round(srcW * scale);
+      const dh = Math.round(srcH * scale);
+      const dx = Math.round((targetW - dw) / 2);
+      const dy = Math.round((targetH - dh) / 2);
+      stepDownDraw(ctx, img, srcW, srcH, dw, dh, dx, dy);
+    }
+
+    return canvas;
+  }
+
+  function stepDownDraw(ctx, source, srcW, srcH, destW, destH, dx, dy) {
+    dx = dx || 0;
+    dy = dy || 0;
+
+    if (srcW / destW > 2 || srcH / destH > 2) {
+      const tempCanvas = document.createElement('canvas');
+      let curW = srcW;
+      let curH = srcH;
+      let curSource = source;
+
+      while (curW / destW > 2 || curH / destH > 2) {
+        const nextW = Math.max(Math.round(curW / 2), destW);
+        const nextH = Math.max(Math.round(curH / 2), destH);
+        tempCanvas.width = nextW;
+        tempCanvas.height = nextH;
+        const tCtx = tempCanvas.getContext('2d');
+        tCtx.imageSmoothingEnabled = true;
+        tCtx.imageSmoothingQuality = 'high';
+        tCtx.drawImage(curSource, 0, 0, curW, curH, 0, 0, nextW, nextH);
+        curSource = tempCanvas;
+        curW = nextW;
+        curH = nextH;
+      }
+
+      ctx.drawImage(curSource, 0, 0, curW, curH, dx, dy, destW, destH);
+    } else {
+      ctx.drawImage(source, 0, 0, srcW, srcH, dx, dy, destW, destH);
+    }
+  }
+
+  // ---- Generate screenshots for one source + one device -------------------
+
+  function generateScreenshot(entry, device) {
+    return new Promise((resolve) => {
+      const { w, h } = getDimensions(device);
+      const method = resizeMethod.value;
+      const canvas = resizeToCanvas(entry.img, w, h, method);
+
+      let mime = outputFormat.value;
+      const quality = parseInt(qualitySlider.value, 10) / 100;
+
+      canvas.toBlob((blob) => {
+        const ext = mimeToExt(mime);
+        const baseName = entry.file.name.replace(/\.[^.]+$/, '');
+        const safeName = device.id.replace(/[^a-z0-9_]/g, '_');
+        resolve({
+          blob,
+          name: `${baseName}_${safeName}${ext}`,
+          width: w,
+          height: h,
+          deviceName: device.name,
+          deviceId: device.id,
+          sourceFile: entry.file.name,
+        });
+      }, mime, quality);
     });
+  }
+
+  // ---- Batch generate handler ---------------------------------------------
+
+  async function handleGenerate() {
+    const selectedDevices = getSelectedDevices();
+    if (state.files.length === 0 || selectedDevices.length === 0) return;
+
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i data-lucide="loader-2"></i> Generating…';
+    if (window.lucide) lucide.createIcons();
+    downloadAllBtn.hidden = true;
+    progressContainer.hidden = false;
+    state.generated = [];
+
+    const totalJobs = state.files.length * selectedDevices.length;
+    let completed = 0;
+
+    for (const entry of state.files) {
+      for (const device of selectedDevices) {
+        const result = await generateScreenshot(entry, device);
+        state.generated.push(result);
+        completed++;
+        const pct = Math.round((completed / totalJobs) * 100);
+        progressBar.style.setProperty('--progress', pct + '%');
+        progressText.textContent = pct + '%';
+      }
+    }
+
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = '<i data-lucide="wand-2"></i> Generate All Screenshots';
+    if (window.lucide) lucide.createIcons();
+    downloadAllBtn.hidden = false;
+
+    renderOutput();
+  }
+
+  // ---- Render output grouped by device ------------------------------------
+
+  function renderOutput() {
+    outputGrid.innerHTML = '';
+
+    // Group by device
+    const groups = new Map();
+    for (const item of state.generated) {
+      if (!groups.has(item.deviceId)) {
+        groups.set(item.deviceId, { device: DEVICES.find(d => d.id === item.deviceId), items: [] });
+      }
+      groups.get(item.deviceId).items.push(item);
+    }
+
+    for (const [, group] of groups) {
+      const section = document.createElement('div');
+      section.className = 'output-device-group';
+
+      const { w, h } = getDimensions(group.device);
+      const headerEl = document.createElement('div');
+      headerEl.className = 'output-device-header';
+      headerEl.innerHTML =
+        `<h3>${group.device.name} <span class="device-dims">${w} &times; ${h}</span></h3>` +
+        `<span class="file-meta">${group.items.length} screenshot${group.items.length > 1 ? 's' : ''}</span>`;
+
+      const grid = document.createElement('div');
+      grid.className = 'output-thumbnails';
+
+      for (const item of group.items) {
+        const card = document.createElement('div');
+        card.className = 'output-thumb';
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(item.blob);
+        img.alt = item.name;
+
+        const body = document.createElement('div');
+        body.className = 'output-thumb-body';
+        body.innerHTML =
+          `<div class="file-name">${item.name}</div>` +
+          `<div class="file-meta">${formatBytes(item.blob.size)}</div>`;
+
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'btn btn-secondary btn-sm';
+        dlBtn.textContent = 'Download';
+        dlBtn.addEventListener('click', () => downloadBlob(item.blob, item.name));
+        body.appendChild(dlBtn);
+
+        card.append(img, body);
+        grid.appendChild(card);
+      }
+
+      section.append(headerEl, grid);
+      outputGrid.appendChild(section);
+    }
   }
 
   function downloadBlob(blob, name) {
@@ -326,61 +566,31 @@
     a.remove();
   }
 
-  // ---- Batch resize handler ------------------------------------------------
-
-  async function handleResize() {
-    if (state.files.length === 0) return;
-
-    // Warn about text readability (non‑blocking — user can still proceed)
-    checkTextSize();
-
-    resizeBtn.disabled = true;
-    resizeBtn.textContent = 'Resizing…';
-    downloadAllBtn.hidden = true;
-    progressContainer.hidden = false;
-    state.resized = [];
-
-    const total = state.files.length;
-
-    for (let i = 0; i < total; i++) {
-      const entry = state.files[i];
-      const { w, h } = computeTarget(entry.img);
-      const result = await resizeImage(entry, w, h);
-      state.resized.push(result);
-
-      const pct = Math.round(((i + 1) / total) * 100);
-      progressBar.style.setProperty('--progress', pct + '%');
-      progressText.textContent = pct + '%';
-    }
-
-    resizeBtn.disabled = false;
-    resizeBtn.textContent = 'Resize All Images';
-    downloadAllBtn.hidden = false;
-
-    renderPreviews();
-  }
-
-  // ---- Download all as ZIP -------------------------------------------------
+  // ---- Download all as ZIP ------------------------------------------------
 
   async function handleDownloadAll() {
-    if (state.resized.length === 0) return;
+    if (state.generated.length === 0) return;
 
     downloadAllBtn.disabled = true;
-    downloadAllBtn.textContent = 'Zipping…';
+    downloadAllBtn.innerHTML = '<i data-lucide="loader-2"></i> Zipping…';
+    if (window.lucide) lucide.createIcons();
 
     const zip = new JSZip();
-    for (const entry of state.resized) {
-      zip.file(entry.name, entry.blob);
+    for (const item of state.generated) {
+      // Organize into folders per device
+      const folder = item.deviceName.replace(/[^a-zA-Z0-9 ._-]/g, '').replace(/\s+/g, '_');
+      zip.file(`${folder}/${item.name}`, item.blob);
     }
 
     const blob = await zip.generateAsync({ type: 'blob' });
-    downloadBlob(blob, 'resized_images.zip');
+    downloadBlob(blob, 'appstore_screenshots.zip');
 
     downloadAllBtn.disabled = false;
-    downloadAllBtn.textContent = 'Download All (ZIP)';
+    downloadAllBtn.innerHTML = '<i data-lucide="archive"></i> Download All (ZIP)';
+    if (window.lucide) lucide.createIcons();
   }
 
-  // ---- Event listeners -----------------------------------------------------
+  // ---- Event listeners ----------------------------------------------------
 
   // Drag & drop
   dropZone.addEventListener('dragover', (e) => {
@@ -395,7 +605,9 @@
   dropZone.addEventListener('drop', async (e) => {
     e.preventDefault();
     dropZone.classList.remove('drag-over');
-    const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+    const files = [...e.dataTransfer.files].filter(f =>
+      f.type === 'image/png' || f.type === 'image/jpeg'
+    );
     await addFiles(files);
   });
 
@@ -410,54 +622,21 @@
   });
 
   async function addFiles(files) {
+    if (files.length === 0) return;
     const entries = await Promise.all(files.map(loadImage));
     state.files.push(...entries);
     renderFileList();
   }
-
-  // Resize mode toggle
-  document.querySelectorAll('input[name="resize-mode"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const mode = getResizeMode();
-      dimensionsInputs.hidden = mode !== 'dimensions';
-      percentageInputs.hidden = mode !== 'percentage';
-      checkTextSize();
-    });
-  });
 
   // Quality slider
   qualitySlider.addEventListener('input', () => {
     qualityValue.textContent = qualitySlider.value;
   });
 
-  // Dimension inputs — auto‑compute companion when aspect ratio is locked
-  targetWidth.addEventListener('input', () => {
-    if (maintainAspect.checked && state.files.length > 0) {
-      const { img } = state.files[0];
-      const w = parseInt(targetWidth.value, 10);
-      if (w > 0) {
-        targetHeight.value = Math.round(img.naturalHeight * (w / img.naturalWidth));
-      }
-    }
-    checkTextSize();
-  });
-
-  targetHeight.addEventListener('input', () => {
-    if (maintainAspect.checked && state.files.length > 0) {
-      const { img } = state.files[0];
-      const h = parseInt(targetHeight.value, 10);
-      if (h > 0) {
-        targetWidth.value = Math.round(img.naturalWidth * (h / img.naturalHeight));
-      }
-    }
-    checkTextSize();
-  });
-
-  scalePercent.addEventListener('input', checkTextSize);
-  originalTextSize.addEventListener('input', checkTextSize);
-  originalDpi.addEventListener('input', checkTextSize);
-
   // Action buttons
-  resizeBtn.addEventListener('click', handleResize);
+  generateBtn.addEventListener('click', handleGenerate);
   downloadAllBtn.addEventListener('click', handleDownloadAll);
+
+  // ---- Init ---------------------------------------------------------------
+  buildDeviceLists();
 })();
