@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// ScreenForge — Professional Screenshot Designer
+// Shotera — Professional Screenshot Designer
 // Supports App Store Connect + Google Play Store
 // ---------------------------------------------------------------------------
 
@@ -1326,7 +1326,7 @@
     }
 
     const blob = await zip.generateAsync({ type: 'blob' });
-    downloadBlob(blob, 'screenforge_screenshots.zip');
+    downloadBlob(blob, 'shotera_screenshots.zip');
 
     downloadAllBtn.disabled = false;
     downloadAllBtn.innerHTML = '<i data-lucide="archive"></i> Download All (ZIP)';
