@@ -165,7 +165,7 @@
       errors.push('LemonSqueezy: Unable to connect');
     }
 
-    return { valid: false, error: 'License key not recognized. Please check your key and try again.' };
+    return { valid: false, error: errors.length ? errors.join(' | ') : 'License key not recognized. Please check your key and try again.' };
   }
 
   // ---- License Revalidation ------------------------------------------------
