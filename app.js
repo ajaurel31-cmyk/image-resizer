@@ -13,7 +13,7 @@
     gumroad: {
       productId: 'YOUR_GUMROAD_PRODUCT_ID',       // e.g. 'abcdef'
       apiUrl: 'https://api.gumroad.com/v2/licenses/verify',
-      storeUrl: 'https://YOUR_HANDLE.gumroad.com/l/shotera',
+      storeUrl: 'https://ajavibe40.gumroad.com/l/gfhnpo',
     },
     lemonsqueezy: {
       apiUrl: 'https://api.lemonsqueezy.com/v1/licenses/validate',
