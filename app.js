@@ -12,11 +12,11 @@
   const LICENSE_CONFIG = {
     gumroad: {
       productId: 'gfhnpo',
-      apiUrl: 'https://api.gumroad.com/v2/licenses/verify',
+      apiUrl: '/api/verify-gumroad',
       storeUrl: 'https://ajavibe40.gumroad.com/l/gfhnpo',
     },
     lemonsqueezy: {
-      apiUrl: 'https://api.lemonsqueezy.com/v1/licenses/validate',
+      apiUrl: '/api/verify-lemonsqueezy',
       storeUrl: 'https://shotera.lemonsqueezy.com/buy/shotera',
     },
   };
@@ -78,15 +78,13 @@
   // ---- Gumroad License Verification ----------------------------------------
 
   async function verifyGumroad(licenseKey) {
-    const body = new URLSearchParams({
-      product_id: LICENSE_CONFIG.gumroad.productId,
-      license_key: licenseKey,
-      increment_uses_count: 'true',
-    });
-
     const res = await fetch(LICENSE_CONFIG.gumroad.apiUrl, {
       method: 'POST',
-      body,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        product_id: LICENSE_CONFIG.gumroad.productId,
+        license_key: licenseKey,
+      }),
     });
 
     const data = await res.json();
