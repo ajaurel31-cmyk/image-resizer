@@ -17,7 +17,7 @@
     },
     lemonsqueezy: {
       apiUrl: 'https://api.lemonsqueezy.com/v1/licenses/validate',
-      storeUrl: 'https://YOUR_STORE.lemonsqueezy.com/buy/shotera',
+      storeUrl: 'https://shotera.lemonsqueezy.com/buy/shotera',
     },
   };
 
