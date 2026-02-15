@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App Store Screenshot Generator</title>
+  <title>ScreenForge — Professional Screenshot Designer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,8 +13,8 @@
 <body>
   <div class="container">
     <header>
-      <h1>App Store Screenshot Generator</h1>
-      <p class="subtitle">Upload your source images and generate properly sized screenshots for App Store Connect.</p>
+      <h1><i data-lucide="anvil"></i> ScreenForge</h1>
+      <p class="subtitle">Professional screenshot designer for App Store &amp; Google Play. Upload, design, and export.</p>
     </header>
 
     <!-- Step 1: Upload -->
@@ -29,7 +29,7 @@
           <span class="drop-zone-or">or</span>
           <label class="btn btn-primary" for="file-input"><i data-lucide="folder-open"></i> Browse Files</label>
           <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/jpg" hidden>
-          <p class="hint">PNG or JPEG only &mdash; RGB, no transparency (App Store requirement)</p>
+          <p class="hint">PNG or JPEG &mdash; supports both App Store and Google Play requirements</p>
         </div>
       </div>
       <div id="file-list" class="file-list" hidden></div>
@@ -48,6 +48,9 @@
         <button class="platform-tab" data-platform="watch"><i data-lucide="watch"></i> Watch</button>
         <button class="platform-tab" data-platform="tv"><i data-lucide="tv"></i> Apple TV</button>
         <button class="platform-tab" data-platform="vision"><i data-lucide="glasses"></i> Vision Pro</button>
+        <span class="tab-divider"></span>
+        <button class="platform-tab" data-platform="android_phone"><i data-lucide="smartphone"></i> Android Phone</button>
+        <button class="platform-tab" data-platform="android_tablet"><i data-lucide="tablet"></i> Android Tablet</button>
       </div>
 
       <div id="device-lists">
@@ -98,7 +101,7 @@
     <!-- Step 2b: Screenshot Design -->
     <section id="design-section" class="card" hidden>
       <h2><i data-lucide="palette"></i> Screenshot Design</h2>
-      <p class="section-desc">Add professional marketing layouts with captions, backgrounds, and device frames.</p>
+      <p class="section-desc">Create professional marketing layouts with captions, backgrounds, device frames, and templates.</p>
 
       <div class="caption-toggle">
         <label class="toggle-label">
@@ -109,16 +112,34 @@
       </div>
 
       <div id="design-fields" class="caption-fields" hidden>
+        <!-- Layout Templates -->
+        <div class="design-group">
+          <label class="design-group-label">Layout Template</label>
+          <div id="layout-templates" class="layout-templates">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
         <!-- Theme Presets -->
         <div class="design-group">
           <label class="design-group-label">Themes</label>
           <div id="theme-presets" class="theme-presets"></div>
         </div>
 
-        <!-- Caption Text -->
+        <!-- Per-Image Captions -->
         <div class="design-group">
-          <label class="design-group-label">Caption Text</label>
-          <div class="caption-input-group">
+          <label class="design-group-label">Captions</label>
+          <div class="caption-mode-toggle">
+            <label class="radio-label">
+              <input type="radio" name="caption-mode" value="global" checked>
+              <span>Same for all</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="caption-mode" value="per-image">
+              <span>Per screenshot</span>
+            </label>
+          </div>
+          <div id="global-captions" class="caption-input-group">
             <div class="setting-group">
               <label for="caption-headline">Headline</label>
               <input type="text" id="caption-headline" placeholder="Your App's Key Feature" maxlength="60">
@@ -127,6 +148,9 @@
               <label for="caption-subtitle">Subtitle <span class="hint-inline">(optional)</span></label>
               <input type="text" id="caption-subtitle" placeholder="A short description of what it does" maxlength="80">
             </div>
+          </div>
+          <div id="per-image-captions" class="per-image-captions" hidden>
+            <!-- Populated dynamically based on uploaded images -->
           </div>
         </div>
 
@@ -171,7 +195,17 @@
                 <option value="bottom">Bottom</option>
               </select>
             </div>
-            <div class="setting-group"></div>
+            <div class="setting-group">
+              <label for="bg-pattern">Background Pattern</label>
+              <select id="bg-pattern">
+                <option value="none">None</option>
+                <option value="dots">Dots</option>
+                <option value="grid">Grid</option>
+                <option value="diagonal">Diagonal Lines</option>
+                <option value="waves">Waves</option>
+                <option value="circles">Circles</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -183,7 +217,48 @@
             <span class="toggle-switch"></span>
             <span>Show device frame around screenshot</span>
           </label>
+          <div class="frame-options" id="frame-options">
+            <div class="settings-row" style="margin-top: 0.75rem;">
+              <div class="setting-group">
+                <label for="frame-shadow">Shadow Intensity</label>
+                <input type="range" id="frame-shadow" min="0" max="100" value="60">
+              </div>
+              <div class="setting-group">
+                <label for="frame-scale">Device Scale</label>
+                <input type="range" id="frame-scale" min="50" max="100" value="85">
+              </div>
+              <div class="setting-group">
+                <label for="frame-color">Frame Color</label>
+                <select id="frame-color">
+                  <option value="black">Black</option>
+                  <option value="silver">Silver</option>
+                  <option value="gold">Gold</option>
+                  <option value="blue">Blue</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Live Preview -->
+    <section id="preview-section" class="card" hidden>
+      <h2><i data-lucide="eye"></i> Live Preview</h2>
+      <p class="section-desc">Real-time preview of your screenshot design. Select an image and device to preview.</p>
+      <div class="preview-controls">
+        <div class="setting-group">
+          <label for="preview-image-select">Preview Image</label>
+          <select id="preview-image-select"></select>
+        </div>
+        <div class="setting-group">
+          <label for="preview-device-select">Preview Device</label>
+          <select id="preview-device-select"></select>
+        </div>
+        <button id="refresh-preview-btn" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw"></i> Refresh</button>
+      </div>
+      <div id="preview-canvas-wrap" class="preview-canvas-wrap">
+        <canvas id="preview-canvas"></canvas>
       </div>
     </section>
 
@@ -200,6 +275,10 @@
       </div>
       <div id="output-grid" class="output-grid"></div>
     </section>
+
+    <footer class="app-footer">
+      <p>ScreenForge &mdash; Professional screenshot designer for App Store &amp; Google Play</p>
+    </footer>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

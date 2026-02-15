@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------
-// App Store Screenshot Generator – app.js
-// All device specs from Apple's official App Store Connect documentation.
+// ScreenForge — Professional Screenshot Designer
+// Supports App Store Connect + Google Play Store
 // ---------------------------------------------------------------------------
 
 (function () {
   'use strict';
 
-  // ---- App Store Connect Device Specifications ----------------------------
+  // ---- Device Specifications ------------------------------------------------
   const DEVICES = [
     // --- iPhone ---
     { id: 'iphone_6_9', name: 'iPhone 6.9″', platform: 'iphone', portrait: [1260, 2736],
@@ -90,20 +90,54 @@
     // --- Apple Vision Pro ---
     { id: 'vision_pro', name: 'Apple Vision Pro', platform: 'vision', portrait: [3840, 2160],
       models: 'Apple Vision Pro', badge: 'required' },
+
+    // --- Android Phone (Google Play) ---
+    { id: 'android_phone_1080', name: 'Phone 1080p', platform: 'android_phone', portrait: [1080, 1920],
+      models: 'Most Android phones (xxhdpi)', badge: 'required' },
+    { id: 'android_phone_1440', name: 'Phone 1440p', platform: 'android_phone', portrait: [1440, 2560],
+      models: 'Samsung Galaxy S series, Pixel Pro', badge: 'recommended' },
+    { id: 'android_phone_1080_2400', name: 'Phone 20:9', platform: 'android_phone', portrait: [1080, 2400],
+      models: 'Modern tall-screen phones (Pixel 7, Samsung A series)', badge: 'recommended' },
+    { id: 'android_phone_1080_2340', name: 'Phone 19.5:9', platform: 'android_phone', portrait: [1080, 2340],
+      models: 'Pixel 6, OnePlus, Xiaomi', badge: null },
+    { id: 'android_phone_1284_2778', name: 'Phone Pixel 9 Pro', platform: 'android_phone', portrait: [1284, 2778],
+      models: 'Google Pixel 9 Pro, Pixel 8 Pro', badge: null },
+
+    // --- Android Tablet (Google Play) ---
+    { id: 'android_tablet_1200', name: 'Tablet 1200×1920', platform: 'android_tablet', portrait: [1200, 1920],
+      models: 'Standard 10″ Android tablets', badge: 'required' },
+    { id: 'android_tablet_1600', name: 'Tablet 1600×2560', platform: 'android_tablet', portrait: [1600, 2560],
+      models: 'Samsung Galaxy Tab S series', badge: 'recommended' },
+    { id: 'android_tablet_800', name: 'Tablet 800×1280', platform: 'android_tablet', portrait: [800, 1280],
+      models: '7″ tablets, Nexus 7', badge: null },
+    { id: 'android_tablet_2000_1200', name: 'Tablet 10.5″ Wide', platform: 'android_tablet', portrait: [1200, 2000],
+      models: 'Pixel Tablet, Samsung Tab S9 FE', badge: null },
   ];
 
   const PLATFORMS = [
-    { id: 'iphone', label: 'iPhone' },
-    { id: 'ipad',   label: 'iPad' },
-    { id: 'mac',    label: 'Mac' },
-    { id: 'watch',  label: 'Apple Watch' },
-    { id: 'tv',     label: 'Apple TV' },
-    { id: 'vision', label: 'Vision Pro' },
+    { id: 'iphone',         label: 'iPhone' },
+    { id: 'ipad',           label: 'iPad' },
+    { id: 'mac',            label: 'Mac' },
+    { id: 'watch',          label: 'Apple Watch' },
+    { id: 'tv',             label: 'Apple TV' },
+    { id: 'vision',         label: 'Vision Pro' },
+    { id: 'android_phone',  label: 'Android Phone' },
+    { id: 'android_tablet', label: 'Android Tablet' },
   ];
 
   const FIXED_ORIENTATION_PLATFORMS = new Set(['mac', 'watch', 'tv', 'vision']);
 
-  // ---- Theme Presets ------------------------------------------------------
+  // ---- Layout Templates ----------------------------------------------------
+  const LAYOUTS = [
+    { id: 'centered',   name: 'Centered',    icon: '▣', desc: 'Device centered with caption above/below' },
+    { id: 'fullbleed',  name: 'Full Bleed',  icon: '▪', desc: 'Screenshot fills entire canvas, caption overlay' },
+    { id: 'offset',     name: 'Offset',      icon: '◧', desc: 'Device shifted to one side, text on the other' },
+    { id: 'panoramic',  name: 'Panoramic',   icon: '▬', desc: 'Wide cinematic layout with device and text side-by-side' },
+    { id: 'minimal',    name: 'Minimal',     icon: '○', desc: 'Clean, lots of whitespace, small device' },
+    { id: 'stacked',    name: 'Stacked',     icon: '≡', desc: 'Large text block above, screenshot below' },
+  ];
+
+  // ---- Theme Presets -------------------------------------------------------
   const THEMES = [
     { name: 'Midnight',  bg1: '#0f0c29', bg2: '#302b63', text: '#ffffff' },
     { name: 'Ocean',     bg1: '#2193b0', bg2: '#6dd5ed', text: '#ffffff' },
@@ -113,16 +147,31 @@
     { name: 'Minimal',   bg1: '#f5f5f7', bg2: '#f5f5f7', text: '#1d1d1f' },
     { name: 'Dark',      bg1: '#1a1a1e', bg2: '#2d2d35', text: '#ffffff' },
     { name: 'Rose',      bg1: '#ff9a9e', bg2: '#fecfef', text: '#2d1b33' },
+    { name: 'Emerald',   bg1: '#0d9488', bg2: '#2dd4bf', text: '#ffffff' },
+    { name: 'Slate',     bg1: '#334155', bg2: '#64748b', text: '#f1f5f9' },
+    { name: 'Coral',     bg1: '#f43f5e', bg2: '#fb7185', text: '#ffffff' },
+    { name: 'Indigo',    bg1: '#312e81', bg2: '#6366f1', text: '#ffffff' },
   ];
 
-  // ---- State --------------------------------------------------------------
+  // ---- Frame Colors --------------------------------------------------------
+  const FRAME_COLORS = {
+    black:  { body: '#1a1a1a', border: 'rgba(255,255,255,0.1)', buttons: '#2a2a2a' },
+    silver: { body: '#c0c0c8', border: 'rgba(255,255,255,0.3)', buttons: '#a0a0a8' },
+    gold:   { body: '#d4a853', border: 'rgba(255,255,255,0.2)', buttons: '#b8943a' },
+    blue:   { body: '#2a4d7f', border: 'rgba(100,150,255,0.2)', buttons: '#1e3a5f' },
+  };
+
+  // ---- State ---------------------------------------------------------------
   const state = {
     files: [],
     generated: [],
     activePlatform: 'iphone',
+    activeLayout: 'centered',
+    perImageCaptions: {},
+    previewDebounce: null,
   };
 
-  // ---- DOM refs -----------------------------------------------------------
+  // ---- DOM refs ------------------------------------------------------------
   const dropZone          = document.getElementById('drop-zone');
   const fileInput         = document.getElementById('file-input');
   const fileListEl        = document.getElementById('file-list');
@@ -142,8 +191,14 @@
   const bgColor2Group     = document.getElementById('bg-color-2-group');
   const textColorInput    = document.getElementById('text-color');
   const textHex           = document.getElementById('text-hex');
+  const bgPattern         = document.getElementById('bg-pattern');
   const deviceFrameEnabled = document.getElementById('device-frame-enabled');
+  const frameShadow       = document.getElementById('frame-shadow');
+  const frameScale        = document.getElementById('frame-scale');
+  const frameColor        = document.getElementById('frame-color');
+  const frameOptions      = document.getElementById('frame-options');
   const outputSection     = document.getElementById('output-section');
+  const previewSection    = document.getElementById('preview-section');
   const generateBtn       = document.getElementById('generate-btn');
   const downloadAllBtn    = document.getElementById('download-all-btn');
   const progressContainer = document.getElementById('progress-bar-container');
@@ -155,8 +210,14 @@
   const outputFormat      = document.getElementById('output-format');
   const resizeMethod      = document.getElementById('resize-method');
   const sizeWarning       = document.getElementById('size-warning');
+  const previewCanvas     = document.getElementById('preview-canvas');
+  const previewImageSelect = document.getElementById('preview-image-select');
+  const previewDeviceSelect = document.getElementById('preview-device-select');
+  const refreshPreviewBtn = document.getElementById('refresh-preview-btn');
+  const perImageCaptionsEl = document.getElementById('per-image-captions');
+  const globalCaptionsEl  = document.getElementById('global-captions');
 
-  // ---- Helpers ------------------------------------------------------------
+  // ---- Helpers -------------------------------------------------------------
 
   function formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -170,6 +231,10 @@
 
   function getOrientation() {
     return document.querySelector('input[name="orientation"]:checked').value;
+  }
+
+  function getCaptionMode() {
+    return document.querySelector('input[name="caption-mode"]:checked').value;
   }
 
   function getSelectedDevices() {
@@ -203,7 +268,7 @@
     });
   }
 
-  // ---- Build device selection UI ------------------------------------------
+  // ---- Build device selection UI -------------------------------------------
 
   function buildDeviceLists() {
     deviceListsEl.innerHTML = '';
@@ -262,7 +327,29 @@
     });
   }
 
-  // ---- Theme presets UI ---------------------------------------------------
+  // ---- Layout template UI --------------------------------------------------
+
+  function buildLayoutTemplates() {
+    const container = document.getElementById('layout-templates');
+    LAYOUTS.forEach((layout, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'layout-btn' + (i === 0 ? ' active' : '');
+      btn.dataset.layout = layout.id;
+      btn.title = layout.desc;
+      btn.innerHTML =
+        `<span class="layout-icon">${layout.icon}</span>` +
+        `<span class="layout-name">${layout.name}</span>`;
+      btn.addEventListener('click', () => {
+        state.activeLayout = layout.id;
+        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        schedulePreview();
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  // ---- Theme presets UI ----------------------------------------------------
 
   function buildThemePresets() {
     const container = document.getElementById('theme-presets');
@@ -298,13 +385,49 @@
 
     document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.theme-swatch')[index]?.classList.add('active');
+    schedulePreview();
   }
 
   function updateBgTypeUI() {
     bgColor2Group.style.display = bgTypeSelect.value === 'solid' ? 'none' : '';
   }
 
-  // ---- Platform tab switching ---------------------------------------------
+  // ---- Per-image captions --------------------------------------------------
+
+  function buildPerImageCaptions() {
+    perImageCaptionsEl.innerHTML = '';
+    if (state.files.length === 0) return;
+
+    state.files.forEach((entry, i) => {
+      const id = entry.file.name;
+      if (!state.perImageCaptions[id]) {
+        state.perImageCaptions[id] = { headline: '', subtitle: '' };
+      }
+      const row = document.createElement('div');
+      row.className = 'per-image-caption-row';
+      row.innerHTML =
+        `<div class="per-image-label">` +
+          `<img src="${entry.objectUrl}" alt="${entry.file.name}" class="per-image-thumb">` +
+          `<span class="per-image-name">${entry.file.name}</span>` +
+        `</div>` +
+        `<div class="per-image-inputs">` +
+          `<input type="text" placeholder="Headline for this screenshot" maxlength="60" data-file="${id}" data-field="headline" value="${state.perImageCaptions[id].headline}">` +
+          `<input type="text" placeholder="Subtitle (optional)" maxlength="80" data-file="${id}" data-field="subtitle" value="${state.perImageCaptions[id].subtitle}">` +
+        `</div>`;
+      perImageCaptionsEl.appendChild(row);
+    });
+
+    perImageCaptionsEl.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const fileId = inp.dataset.file;
+        const field = inp.dataset.field;
+        if (!state.perImageCaptions[fileId]) state.perImageCaptions[fileId] = {};
+        state.perImageCaptions[fileId][field] = inp.value;
+      });
+    });
+  }
+
+  // ---- Platform tab switching ----------------------------------------------
 
   document.querySelector('.platform-tabs').addEventListener('click', (e) => {
     const tab = e.target.closest('.platform-tab');
@@ -321,22 +444,36 @@
     if (target) target.classList.add('active');
   });
 
-  // ---- Orientation change -------------------------------------------------
+  // ---- Orientation change --------------------------------------------------
 
   document.querySelectorAll('input[name="orientation"]').forEach(radio => {
     radio.addEventListener('change', () => {
       updateDeviceDimensions();
       checkSizeWarnings();
+      updatePreviewSelects();
+      schedulePreview();
     });
   });
 
-  // ---- Render file list ---------------------------------------------------
+  // ---- Caption mode toggle -------------------------------------------------
+
+  document.querySelectorAll('input[name="caption-mode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const mode = getCaptionMode();
+      globalCaptionsEl.hidden = mode !== 'global';
+      perImageCaptionsEl.hidden = mode !== 'per-image';
+      if (mode === 'per-image') buildPerImageCaptions();
+    });
+  });
+
+  // ---- Render file list ----------------------------------------------------
 
   function renderFileList() {
     if (state.files.length === 0) {
       fileListEl.hidden = true;
       devicesSection.hidden = true;
       designSection.hidden = true;
+      previewSection.hidden = true;
       outputSection.hidden = true;
       return;
     }
@@ -357,6 +494,7 @@
     clearBtn.addEventListener('click', () => {
       state.files.forEach(f => URL.revokeObjectURL(f.objectUrl));
       state.files = [];
+      state.perImageCaptions = {};
       renderFileList();
     });
     header.appendChild(clearBtn);
@@ -383,6 +521,7 @@
       removeBtn.title = 'Remove';
       removeBtn.addEventListener('click', () => {
         URL.revokeObjectURL(entry.objectUrl);
+        delete state.perImageCaptions[entry.file.name];
         state.files.splice(i, 1);
         renderFileList();
       });
@@ -392,10 +531,12 @@
     });
 
     checkSizeWarnings();
+    updatePreviewSelects();
+    if (getCaptionMode() === 'per-image') buildPerImageCaptions();
     if (window.lucide) lucide.createIcons();
   }
 
-  // ---- Size warnings ------------------------------------------------------
+  // ---- Size warnings -------------------------------------------------------
 
   function checkSizeWarnings() {
     if (state.files.length === 0) {
@@ -432,7 +573,7 @@
     }
   }
 
-  // ---- Canvas resize with multi-step down-scaling -------------------------
+  // ---- Canvas resize with multi-step down-scaling --------------------------
 
   function resizeToCanvas(img, targetW, targetH, method) {
     const canvas = document.createElement('canvas');
@@ -498,7 +639,7 @@
     }
   }
 
-  // ---- Drawing helpers ----------------------------------------------------
+  // ---- Drawing helpers -----------------------------------------------------
 
   function drawRoundedRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -532,23 +673,39 @@
     return lines;
   }
 
-  // ---- Design config ------------------------------------------------------
+  // ---- Design config -------------------------------------------------------
 
-  function getDesignConfig() {
+  function getDesignConfig(entry) {
     if (!designEnabled.checked) return null;
+
+    let headline, subtitle;
+    if (getCaptionMode() === 'per-image' && entry) {
+      const captions = state.perImageCaptions[entry.file.name] || {};
+      headline = (captions.headline || '').trim();
+      subtitle = (captions.subtitle || '').trim();
+    } else {
+      headline = captionHeadline.value.trim();
+      subtitle = captionSubtitle.value.trim();
+    }
+
     return {
-      headline: captionHeadline.value.trim(),
-      subtitle: captionSubtitle.value.trim(),
+      headline,
+      subtitle,
       position: captionPosition.value,
       bgType: bgTypeSelect.value,
       bgColor1: bgColor1.value,
       bgColor2: bgColor2.value,
       textColor: textColorInput.value,
+      pattern: bgPattern.value,
       deviceFrame: deviceFrameEnabled.checked,
+      layout: state.activeLayout,
+      frameShadow: parseInt(frameShadow.value, 10) / 100,
+      frameScale: parseInt(frameScale.value, 10) / 100,
+      frameColor: frameColor.value,
     };
   }
 
-  // ---- Draw background gradient/solid -------------------------------------
+  // ---- Draw background gradient/solid + pattern ----------------------------
 
   function drawBackground(ctx, w, h, design) {
     if (design.bgType === 'gradient') {
@@ -560,38 +717,118 @@
       ctx.fillStyle = design.bgColor1;
     }
     ctx.fillRect(0, 0, w, h);
+
+    // Draw pattern overlay
+    if (design.pattern && design.pattern !== 'none') {
+      drawPattern(ctx, w, h, design.pattern);
+    }
   }
 
-  // ---- Draw device frame with screenshot inside ---------------------------
+  function drawPattern(ctx, w, h, pattern) {
+    ctx.save();
+    ctx.globalAlpha = 0.06;
 
-  function drawDeviceWithScreenshot(ctx, img, areaY, areaW, areaH, platform) {
+    if (pattern === 'dots') {
+      const spacing = Math.max(w * 0.025, 20);
+      ctx.fillStyle = '#ffffff';
+      for (let x = spacing; x < w; x += spacing) {
+        for (let y = spacing; y < h; y += spacing) {
+          ctx.beginPath();
+          ctx.arc(x, y, spacing * 0.12, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    } else if (pattern === 'grid') {
+      const spacing = Math.max(w * 0.04, 30);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      for (let x = spacing; x < w; x += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = spacing; y < h; y += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+    } else if (pattern === 'diagonal') {
+      const spacing = Math.max(w * 0.035, 25);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      for (let i = -h; i < w + h; i += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + h, h);
+        ctx.stroke();
+      }
+    } else if (pattern === 'waves') {
+      const spacing = Math.max(h * 0.08, 40);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      for (let y = spacing; y < h; y += spacing) {
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 2) {
+          const wave = Math.sin((x / w) * Math.PI * 4) * (spacing * 0.3);
+          if (x === 0) ctx.moveTo(x, y + wave);
+          else ctx.lineTo(x, y + wave);
+        }
+        ctx.stroke();
+      }
+    } else if (pattern === 'circles') {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxR = Math.sqrt(w * w + h * h) / 2;
+      const spacing = Math.max(w * 0.06, 40);
+      for (let r = spacing; r < maxR; r += spacing) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // ---- Draw device frame ---------------------------------------------------
+
+  function drawDeviceWithScreenshot(ctx, img, areaX, areaY, areaW, areaH, platform, design) {
+    const scaleFactor = design ? design.frameScale : 0.85;
+    const shadowIntensity = design ? design.frameShadow : 0.6;
+    const colorScheme = FRAME_COLORS[(design && design.frameColor) || 'black'];
+
     const padding = areaW * 0.06;
     const maxFrameW = areaW - padding * 2;
     const maxFrameH = areaH - padding * 2;
 
-    // Aspect ratios for device frames (width/height)
     let frameAspect;
     if (platform === 'ipad') {
       frameAspect = 0.72;
     } else if (platform === 'mac') {
-      frameAspect = 1.6; // landscape
+      frameAspect = 1.6;
+    } else if (platform === 'android_phone') {
+      frameAspect = 0.47;
+    } else if (platform === 'android_tablet') {
+      frameAspect = 0.68;
     } else {
-      frameAspect = 0.49; // iPhone-like for phone/watch
+      frameAspect = 0.49;
     }
 
     let frameW, frameH;
 
     if (platform === 'mac') {
-      // Mac: landscape frame
-      frameW = Math.min(maxFrameW * 0.85, maxFrameH * frameAspect);
+      frameW = Math.min(maxFrameW * scaleFactor, maxFrameH * frameAspect);
       frameH = frameW / frameAspect;
-      if (frameH > maxFrameH * 0.85) {
-        frameH = maxFrameH * 0.85;
+      if (frameH > maxFrameH * scaleFactor) {
+        frameH = maxFrameH * scaleFactor;
         frameW = frameH * frameAspect;
       }
     } else {
-      // Portrait devices
-      frameH = maxFrameH;
+      frameH = maxFrameH * scaleFactor;
       frameW = frameH * frameAspect;
 
       if (frameW > maxFrameW) {
@@ -599,18 +836,15 @@
         frameH = frameW / frameAspect;
       }
 
-      // Limit width for phones to look proportional
-      if ((platform === 'iphone' || platform === 'watch') && frameW > areaW * 0.52) {
+      if ((platform === 'iphone' || platform === 'watch' || platform === 'android_phone') && frameW > areaW * 0.52) {
         frameW = areaW * 0.52;
         frameH = frameW / frameAspect;
       }
     }
 
-    // Center frame in area
-    const frameX = (areaW - frameW) / 2;
+    const frameX = areaX + (areaW - frameW) / 2;
     const frameY = areaY + (areaH - frameH) / 2;
 
-    // Device body proportions
     const cornerR = platform === 'mac' ? frameW * 0.02 : frameW * 0.07;
     const bezelSide = frameW * 0.022;
     const bezelTop = platform === 'mac' ? frameH * 0.03 : frameH * 0.015;
@@ -618,35 +852,31 @@
 
     // Shadow
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    ctx.shadowBlur = frameW * 0.06;
-    ctx.shadowOffsetY = frameW * 0.02;
+    ctx.shadowColor = `rgba(0, 0, 0, ${0.4 * shadowIntensity})`;
+    ctx.shadowBlur = frameW * 0.06 * shadowIntensity;
+    ctx.shadowOffsetY = frameW * 0.02 * shadowIntensity;
 
-    // Device body
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = colorScheme.body;
     drawRoundedRect(ctx, frameX, frameY, frameW, frameH, cornerR);
     ctx.fill();
     ctx.restore();
 
-    // Subtle border highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    // Border highlight
+    ctx.strokeStyle = colorScheme.border;
     ctx.lineWidth = 1;
     drawRoundedRect(ctx, frameX, frameY, frameW, frameH, cornerR);
     ctx.stroke();
 
-    // Side button details for iPhone
-    if (platform === 'iphone') {
-      ctx.fillStyle = '#2a2a2a';
-      // Power button (right side)
+    // Side buttons for phones
+    if (platform === 'iphone' || platform === 'android_phone') {
+      ctx.fillStyle = colorScheme.buttons;
       const btnW = 3;
       const btnH = frameH * 0.06;
       const btnX = frameX + frameW;
       const btnY = frameY + frameH * 0.22;
       drawRoundedRect(ctx, btnX, btnY, btnW, btnH, 1.5);
       ctx.fill();
-      // Volume buttons (left side)
       const volBtnH = frameH * 0.04;
-      ctx.fillStyle = '#2a2a2a';
       drawRoundedRect(ctx, frameX - btnW, frameY + frameH * 0.18, btnW, volBtnH, 1.5);
       ctx.fill();
       drawRoundedRect(ctx, frameX - btnW, frameY + frameH * 0.24, btnW, volBtnH, 1.5);
@@ -660,7 +890,6 @@
     const screenH = frameH - bezelTop - bezelBottom;
     const screenCornerR = cornerR * 0.85;
 
-    // Draw screenshot into screen area (fill/crop to fit)
     ctx.save();
     drawRoundedRect(ctx, screenX, screenY, screenW, screenH, screenCornerR);
     ctx.clip();
@@ -686,7 +915,18 @@
       ctx.fill();
     }
 
-    // Home indicator bar (iPhone/iPad)
+    // Punch-hole camera (Android)
+    if (platform === 'android_phone') {
+      const holeR = frameW * 0.02;
+      const holeX = frameX + frameW / 2;
+      const holeY = screenY + screenH * 0.018;
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Home indicator (iPhone/iPad)
     if (platform === 'iphone' || platform === 'ipad') {
       const barW = frameW * 0.30;
       const barH = frameW * 0.012;
@@ -697,16 +937,26 @@
       ctx.fill();
     }
 
-    // Mac: draw keyboard/base area
+    // Android nav bar
+    if (platform === 'android_phone' || platform === 'android_tablet') {
+      const barW = frameW * 0.25;
+      const barH = frameW * 0.01;
+      const barX = frameX + (frameW - barW) / 2;
+      const barY = screenY + screenH - screenH * 0.02;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      drawRoundedRect(ctx, barX, barY, barW, barH, barH / 2);
+      ctx.fill();
+    }
+
+    // Mac keyboard/base
     if (platform === 'mac') {
       const baseH = frameH * 0.04;
       const baseY = frameY + frameH;
       const baseW = frameW * 1.05;
       const baseX = frameX - (baseW - frameW) / 2;
-      ctx.fillStyle = '#2a2a2a';
+      ctx.fillStyle = colorScheme.buttons;
       drawRoundedRect(ctx, baseX, baseY, baseW, baseH, baseH * 0.4);
       ctx.fill();
-      // Hinge line
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -716,36 +966,32 @@
     }
   }
 
-  // ---- Draw caption text --------------------------------------------------
+  // ---- Draw caption text ---------------------------------------------------
 
-  function drawCaptionText(ctx, canvasW, captionY, captionH, design) {
-    const headlineSize = Math.max(Math.round(canvasW * 0.057), 32);
-    const subtitleSize = Math.max(Math.round(canvasW * 0.033), 22);
+  function drawCaptionText(ctx, areaX, areaY, areaW, areaH, design) {
+    const headlineSize = Math.max(Math.round(areaW * 0.057), 32);
+    const subtitleSize = Math.max(Math.round(areaW * 0.033), 22);
     const fontStack = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
     ctx.fillStyle = design.textColor;
     ctx.textAlign = 'center';
-    const centerX = canvasW / 2;
-    const maxTextWidth = canvasW * 0.85;
+    const centerX = areaX + areaW / 2;
+    const maxTextWidth = areaW * 0.85;
 
     const hasSubtitle = design.subtitle.length > 0;
     const lineGap = Math.round(headlineSize * 0.35);
 
-    // Measure headline
     ctx.font = `800 ${headlineSize}px ${fontStack}`;
     const headlineLines = wrapText(ctx, design.headline, maxTextWidth);
 
-    // Measure subtitle
     ctx.font = `500 ${subtitleSize}px ${fontStack}`;
     const subtitleLines = hasSubtitle ? wrapText(ctx, design.subtitle, maxTextWidth) : [];
 
-    // Calculate total block height for vertical centering
     const headlineBlockH = headlineLines.length * (headlineSize * 1.2);
     const subtitleBlockH = subtitleLines.length * (subtitleSize * 1.2);
     const totalTextH = headlineBlockH + (hasSubtitle ? lineGap + subtitleBlockH : 0);
-    let textY = captionY + (captionH - totalTextH) / 2 + headlineSize;
+    let textY = areaY + (areaH - totalTextH) / 2 + headlineSize;
 
-    // Draw headline
     ctx.font = `800 ${headlineSize}px ${fontStack}`;
     ctx.textBaseline = 'alphabetic';
     for (const line of headlineLines) {
@@ -753,7 +999,6 @@
       textY += headlineSize * 1.2;
     }
 
-    // Draw subtitle
     if (hasSubtitle) {
       textY += lineGap - headlineSize * 0.2;
       ctx.font = `500 ${subtitleSize}px ${fontStack}`;
@@ -764,13 +1009,167 @@
     }
   }
 
-  // ---- Generate screenshots for one source + one device -------------------
+  // ---- Layout rendering engines --------------------------------------------
+
+  function renderLayout(canvas, ctx, w, h, entry, device, design) {
+    const layout = design.layout || 'centered';
+    const hasCaption = design.headline.length > 0;
+    const method = resizeMethod.value;
+
+    // 1. Background
+    drawBackground(ctx, w, h, design);
+
+    switch (layout) {
+      case 'centered':
+        renderCenteredLayout(ctx, w, h, entry, device, design, hasCaption, method);
+        break;
+      case 'fullbleed':
+        renderFullBleedLayout(ctx, w, h, entry, device, design, hasCaption, method);
+        break;
+      case 'offset':
+        renderOffsetLayout(ctx, w, h, entry, device, design, hasCaption, method);
+        break;
+      case 'panoramic':
+        renderPanoramicLayout(ctx, w, h, entry, device, design, hasCaption, method);
+        break;
+      case 'minimal':
+        renderMinimalLayout(ctx, w, h, entry, device, design, hasCaption, method);
+        break;
+      case 'stacked':
+        renderStackedLayout(ctx, w, h, entry, device, design, hasCaption, method);
+        break;
+      default:
+        renderCenteredLayout(ctx, w, h, entry, device, design, hasCaption, method);
+    }
+  }
+
+  function renderCenteredLayout(ctx, w, h, entry, device, design, hasCaption, method) {
+    const captionRatio = hasCaption ? 0.22 : 0;
+    const captionH = Math.round(h * captionRatio);
+    const contentH = h - captionH;
+    const contentY = design.position === 'top' ? captionH : 0;
+
+    if (design.deviceFrame) {
+      drawDeviceWithScreenshot(ctx, entry.img, 0, contentY, w, contentH, device.platform, design);
+    } else {
+      const imgCanvas = resizeToCanvas(entry.img, w, contentH, method);
+      ctx.drawImage(imgCanvas, 0, contentY);
+    }
+
+    if (hasCaption) {
+      const captionY = design.position === 'top' ? 0 : contentH;
+      drawCaptionText(ctx, 0, captionY, w, captionH, design);
+    }
+  }
+
+  function renderFullBleedLayout(ctx, w, h, entry, device, design, hasCaption, method) {
+    // Screenshot fills entire background
+    const imgCanvas = resizeToCanvas(entry.img, w, h, 'fill');
+    ctx.drawImage(imgCanvas, 0, 0);
+
+    // Dark overlay for text readability
+    if (hasCaption) {
+      const overlayH = h * 0.35;
+      const grad = ctx.createLinearGradient(0,
+        design.position === 'top' ? 0 : h - overlayH,
+        0,
+        design.position === 'top' ? overlayH : h);
+      grad.addColorStop(0, design.position === 'top' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0)');
+      grad.addColorStop(1, design.position === 'top' ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.7)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, design.position === 'top' ? 0 : h - overlayH, w, overlayH);
+
+      const captionY = design.position === 'top' ? h * 0.03 : h * 0.72;
+      drawCaptionText(ctx, 0, captionY, w, h * 0.25, design);
+    }
+  }
+
+  function renderOffsetLayout(ctx, w, h, entry, device, design, hasCaption, method) {
+    // Device on the right, text on the left
+    const deviceAreaW = w * 0.55;
+    const textAreaW = w * 0.45;
+    const deviceAreaX = textAreaW;
+
+    if (design.deviceFrame) {
+      drawDeviceWithScreenshot(ctx, entry.img, deviceAreaX, 0, deviceAreaW, h, device.platform, design);
+    } else {
+      const imgCanvas = resizeToCanvas(entry.img, Math.round(deviceAreaW * 0.85), Math.round(h * 0.85), method);
+      const dx = deviceAreaX + (deviceAreaW - imgCanvas.width) / 2;
+      const dy = (h - imgCanvas.height) / 2;
+      ctx.drawImage(imgCanvas, dx, dy);
+    }
+
+    if (hasCaption) {
+      drawCaptionText(ctx, 0, 0, textAreaW, h, design);
+    }
+  }
+
+  function renderPanoramicLayout(ctx, w, h, entry, device, design, hasCaption, method) {
+    // Side by side: text left, large device right
+    const textW = w * 0.38;
+    const deviceW = w * 0.62;
+
+    if (design.deviceFrame) {
+      drawDeviceWithScreenshot(ctx, entry.img, textW, h * 0.05, deviceW, h * 0.9, device.platform, design);
+    } else {
+      const imgCanvas = resizeToCanvas(entry.img, Math.round(deviceW * 0.9), Math.round(h * 0.9), method);
+      const dx = textW + (deviceW - imgCanvas.width) / 2;
+      const dy = (h - imgCanvas.height) / 2;
+      ctx.drawImage(imgCanvas, dx, dy);
+    }
+
+    if (hasCaption) {
+      drawCaptionText(ctx, 0, h * 0.15, textW, h * 0.7, design);
+    }
+  }
+
+  function renderMinimalLayout(ctx, w, h, entry, device, design, hasCaption, method) {
+    // Small device centered with lots of breathing room
+    const deviceH = h * 0.55;
+    const captionH = hasCaption ? h * 0.2 : 0;
+    const deviceY = design.position === 'top' ? captionH + (h - captionH - deviceH) / 2 : (h - captionH - deviceH) / 2;
+
+    if (design.deviceFrame) {
+      const smallDesign = Object.assign({}, design, { frameScale: design.frameScale * 0.75 });
+      drawDeviceWithScreenshot(ctx, entry.img, 0, deviceY, w, deviceH, device.platform, smallDesign);
+    } else {
+      const imgCanvas = resizeToCanvas(entry.img, Math.round(w * 0.5), Math.round(deviceH * 0.8), method);
+      const dx = (w - imgCanvas.width) / 2;
+      const dy = deviceY + (deviceH - imgCanvas.height) / 2;
+      ctx.drawImage(imgCanvas, dx, dy);
+    }
+
+    if (hasCaption) {
+      const captionY = design.position === 'top' ? h * 0.05 : h - captionH - h * 0.02;
+      drawCaptionText(ctx, 0, captionY, w, captionH, design);
+    }
+  }
+
+  function renderStackedLayout(ctx, w, h, entry, device, design, hasCaption, method) {
+    // Large text block on top, screenshot below
+    const textH = hasCaption ? h * 0.32 : 0;
+    const contentH = h - textH;
+    const contentY = textH;
+
+    if (design.deviceFrame) {
+      drawDeviceWithScreenshot(ctx, entry.img, 0, contentY, w, contentH, device.platform, design);
+    } else {
+      const imgCanvas = resizeToCanvas(entry.img, w, contentH, method);
+      ctx.drawImage(imgCanvas, 0, contentY);
+    }
+
+    if (hasCaption) {
+      drawCaptionText(ctx, 0, 0, w, textH, design);
+    }
+  }
+
+  // ---- Generate screenshot -------------------------------------------------
 
   function generateScreenshot(entry, device) {
     return new Promise((resolve) => {
       const { w, h } = getDimensions(device);
       const method = resizeMethod.value;
-      const design = getDesignConfig();
+      const design = getDesignConfig(entry);
 
       let canvas;
 
@@ -781,33 +1180,8 @@
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-
-        // 1. Draw gradient/solid background
-        drawBackground(ctx, w, h, design);
-
-        // 2. Calculate layout
-        const hasCaption = design.headline.length > 0;
-        const captionRatio = hasCaption ? 0.22 : 0;
-        const captionH = Math.round(h * captionRatio);
-        const contentH = h - captionH;
-        const contentY = design.position === 'top' ? captionH : 0;
-
-        // 3. Draw screenshot (with or without device frame)
-        if (design.deviceFrame) {
-          drawDeviceWithScreenshot(ctx, entry.img, contentY, w, contentH, device.platform);
-        } else {
-          // No frame: draw image into content area
-          const imgCanvas = resizeToCanvas(entry.img, w, contentH, method);
-          ctx.drawImage(imgCanvas, 0, contentY);
-        }
-
-        // 4. Draw caption text
-        if (hasCaption) {
-          const captionY = design.position === 'top' ? 0 : contentH;
-          drawCaptionText(ctx, w, captionY, captionH, design);
-        }
+        renderLayout(canvas, ctx, w, h, entry, device, design);
       } else {
-        // No design: plain resize
         canvas = resizeToCanvas(entry.img, w, h, method);
       }
 
@@ -831,7 +1205,7 @@
     });
   }
 
-  // ---- Batch generate handler ---------------------------------------------
+  // ---- Batch generate ------------------------------------------------------
 
   async function handleGenerate() {
     const selectedDevices = getSelectedDevices();
@@ -866,7 +1240,7 @@
     renderOutput();
   }
 
-  // ---- Render output grouped by device ------------------------------------
+  // ---- Render output -------------------------------------------------------
 
   function renderOutput() {
     outputGrid.innerHTML = '';
@@ -886,8 +1260,13 @@
       const { w, h } = getDimensions(group.device);
       const headerEl = document.createElement('div');
       headerEl.className = 'output-device-header';
+
+      const storeBadge = group.device.platform.startsWith('android')
+        ? '<span class="store-badge store-badge-google">Google Play</span>'
+        : '<span class="store-badge store-badge-apple">App Store</span>';
+
       headerEl.innerHTML =
-        `<h3>${group.device.name} <span class="device-dims">${w} &times; ${h}</span></h3>` +
+        `<h3>${storeBadge} ${group.device.name} <span class="device-dims">${w} &times; ${h}</span></h3>` +
         `<span class="file-meta">${group.items.length} screenshot${group.items.length > 1 ? 's' : ''}</span>`;
 
       const grid = document.createElement('div');
@@ -931,7 +1310,7 @@
     a.remove();
   }
 
-  // ---- Download all as ZIP ------------------------------------------------
+  // ---- Download all as ZIP -------------------------------------------------
 
   async function handleDownloadAll() {
     if (state.generated.length === 0) return;
@@ -947,14 +1326,92 @@
     }
 
     const blob = await zip.generateAsync({ type: 'blob' });
-    downloadBlob(blob, 'appstore_screenshots.zip');
+    downloadBlob(blob, 'screenforge_screenshots.zip');
 
     downloadAllBtn.disabled = false;
     downloadAllBtn.innerHTML = '<i data-lucide="archive"></i> Download All (ZIP)';
     if (window.lucide) lucide.createIcons();
   }
 
-  // ---- Event listeners ----------------------------------------------------
+  // ---- Live Preview --------------------------------------------------------
+
+  function updatePreviewSelects() {
+    // Image selector
+    previewImageSelect.innerHTML = '';
+    state.files.forEach((entry, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = entry.file.name;
+      previewImageSelect.appendChild(opt);
+    });
+
+    // Device selector
+    previewDeviceSelect.innerHTML = '';
+    const selectedDevices = getSelectedDevices();
+    if (selectedDevices.length === 0) {
+      // Show first device of active platform
+      const fallback = DEVICES.filter(d => d.platform === state.activePlatform);
+      fallback.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.name;
+        previewDeviceSelect.appendChild(opt);
+      });
+    } else {
+      selectedDevices.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.name;
+        previewDeviceSelect.appendChild(opt);
+      });
+    }
+  }
+
+  function schedulePreview() {
+    if (!designEnabled.checked || state.files.length === 0) return;
+    clearTimeout(state.previewDebounce);
+    state.previewDebounce = setTimeout(renderPreview, 300);
+  }
+
+  function renderPreview() {
+    if (state.files.length === 0) return;
+
+    previewSection.hidden = false;
+    const imgIndex = parseInt(previewImageSelect.value, 10) || 0;
+    const entry = state.files[imgIndex];
+    if (!entry) return;
+
+    const deviceId = previewDeviceSelect.value;
+    const device = DEVICES.find(d => d.id === deviceId);
+    if (!device) return;
+
+    const { w, h } = getDimensions(device);
+    const design = getDesignConfig(entry);
+
+    // Scale down for preview (max 400px wide)
+    const maxPreviewW = 400;
+    const scale = Math.min(maxPreviewW / w, 1);
+    const pW = Math.round(w * scale);
+    const pH = Math.round(h * scale);
+
+    previewCanvas.width = pW;
+    previewCanvas.height = pH;
+    const ctx = previewCanvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    if (design) {
+      // Render at scaled size for preview speed
+      renderLayout(previewCanvas, ctx, pW, pH, entry, device, design);
+    } else {
+      const imgCanvas = resizeToCanvas(entry.img, pW, pH, resizeMethod.value);
+      ctx.drawImage(imgCanvas, 0, 0);
+    }
+
+    if (window.lucide) lucide.createIcons();
+  }
+
+  // ---- Event listeners -----------------------------------------------------
 
   // Drag & drop
   dropZone.addEventListener('dragover', (e) => {
@@ -995,28 +1452,55 @@
   // Design toggle & controls
   designEnabled.addEventListener('change', () => {
     designFields.hidden = !designEnabled.checked;
+    if (designEnabled.checked && state.files.length > 0) {
+      previewSection.hidden = false;
+      updatePreviewSelects();
+      schedulePreview();
+    } else {
+      previewSection.hidden = true;
+    }
     if (window.lucide) lucide.createIcons();
+  });
+
+  deviceFrameEnabled.addEventListener('change', () => {
+    frameOptions.style.display = deviceFrameEnabled.checked ? '' : 'none';
+    schedulePreview();
   });
 
   bgTypeSelect.addEventListener('change', () => {
     updateBgTypeUI();
     document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    schedulePreview();
   });
 
   bgColor1.addEventListener('input', () => {
     bgHex1.textContent = bgColor1.value;
     document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    schedulePreview();
   });
 
   bgColor2.addEventListener('input', () => {
     bgHex2.textContent = bgColor2.value;
     document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    schedulePreview();
   });
 
   textColorInput.addEventListener('input', () => {
     textHex.textContent = textColorInput.value;
     document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    schedulePreview();
   });
+
+  bgPattern.addEventListener('change', schedulePreview);
+  frameShadow.addEventListener('input', schedulePreview);
+  frameScale.addEventListener('input', schedulePreview);
+  frameColor.addEventListener('change', schedulePreview);
+  captionHeadline.addEventListener('input', schedulePreview);
+  captionSubtitle.addEventListener('input', schedulePreview);
+  captionPosition.addEventListener('change', schedulePreview);
+  previewImageSelect.addEventListener('change', schedulePreview);
+  previewDeviceSelect.addEventListener('change', schedulePreview);
+  refreshPreviewBtn.addEventListener('click', renderPreview);
 
   // Quality slider
   qualitySlider.addEventListener('input', () => {
@@ -1027,8 +1511,9 @@
   generateBtn.addEventListener('click', handleGenerate);
   downloadAllBtn.addEventListener('click', handleDownloadAll);
 
-  // ---- Init ---------------------------------------------------------------
+  // ---- Init ----------------------------------------------------------------
   buildDeviceLists();
+  buildLayoutTemplates();
   buildThemePresets();
   updateBgTypeUI();
 })();
