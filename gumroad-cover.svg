@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0f0f14"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="10%" cy="15%" r="45%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="90%" cy="85%" r="40%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="phone1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(139,92,246,0.35)"/>
+      <stop offset="100%" stop-color="rgba(59,130,246,0.35)"/>
+    </linearGradient>
+    <linearGradient id="phone2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(99,102,241,0.35)"/>
+      <stop offset="100%" stop-color="rgba(139,92,246,0.35)"/>
+    </linearGradient>
+    <linearGradient id="phone3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(59,130,246,0.35)"/>
+      <stop offset="100%" stop-color="rgba(99,102,241,0.35)"/>
+    </linearGradient>
+    <linearGradient id="phone4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(139,92,246,0.2)"/>
+      <stop offset="100%" stop-color="rgba(59,130,246,0.2)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect width="1280" height="720" fill="url(#glow1)"/>
+  <rect width="1280" height="720" fill="url(#glow2)"/>
+
+  <!-- LEFT SIDE -->
+
+  <!-- Logo -->
+  <rect x="80" y="200" width="56" height="56" rx="14" fill="url(#accent)"/>
+  <rect x="92" y="208" width="16" height="28" rx="3" stroke="white" stroke-width="2" fill="none" transform="translate(2,4)"/>
+  <line x1="86" y1="220" x2="90" y2="220" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="86" y1="236" x2="90" y2="236" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="126" y1="220" x2="130" y2="220" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="126" y1="236" x2="130" y2="236" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="86" y1="220" x2="86" y2="216" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="86" y1="236" x2="86" y2="240" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="130" y1="220" x2="130" y2="216" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+  <line x1="130" y1="236" x2="130" y2="240" stroke="white" stroke-width="2" stroke-linecap="round" transform="translate(0,4)"/>
+
+  <!-- Title -->
+  <text x="80" y="318" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="56" font-weight="700" fill="white" letter-spacing="-2">Shotera</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="354" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" fill="#8b8b9e">Professional screenshot designer for</text>
+  <text x="80" y="380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" fill="#8b8b9e">App Store &amp; Google Play. No Figma needed.</text>
+
+  <!-- Feature chips -->
+  <rect x="80" y="416" width="120" height="38" rx="10" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="140" y="440" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#c4b5fd">Batch Export</text>
+
+  <rect x="212" y="416" width="104" height="38" rx="10" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="264" y="440" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#c4b5fd">12 Themes</text>
+
+  <rect x="328" y="416" width="134" height="38" rx="10" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="395" y="440" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#c4b5fd">Device Frames</text>
+
+  <rect x="80" y="466" width="126" height="38" rx="10" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="143" y="490" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#c4b5fd">All Platforms</text>
+
+  <!-- RIGHT SIDE - Mockup -->
+  <rect x="700" y="160" width="420" height="400" rx="20" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Window dots -->
+  <circle cx="730" cy="190" r="5" fill="#ef4444"/>
+  <circle cx="748" cy="190" r="5" fill="#eab308"/>
+  <circle cx="766" cy="190" r="5" fill="#22c55e"/>
+
+  <!-- Row 1: 4 phones -->
+  <rect x="720" y="215" width="85" height="140" rx="12" fill="url(#phone1)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="762" y="290" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">iPhone</text>
+
+  <rect x="817" y="215" width="85" height="140" rx="12" fill="url(#phone2)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="859" y="290" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">iPad</text>
+
+  <rect x="914" y="215" width="85" height="140" rx="12" fill="url(#phone3)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="956" y="290" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">Android</text>
+
+  <rect x="1011" y="215" width="85" height="140" rx="12" fill="url(#phone4)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="1053" y="290" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">Mac</text>
+
+  <!-- Row 2: 4 phones -->
+  <rect x="720" y="370" width="85" height="140" rx="12" fill="url(#phone3)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="762" y="445" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">Watch</text>
+
+  <rect x="817" y="370" width="85" height="140" rx="12" fill="url(#phone1)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="859" y="445" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">TV</text>
+
+  <rect x="914" y="370" width="85" height="140" rx="12" fill="url(#phone4)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="956" y="445" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">Vision</text>
+
+  <rect x="1011" y="370" width="85" height="140" rx="12" fill="url(#phone2)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  <text x="1053" y="445" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="rgba(255,255,255,0.5)" font-weight="500">Tablet</text>
+
+  <!-- Export button -->
+  <rect x="720" y="525" width="376" height="20" rx="10" fill="url(#accent)"/>
+  <text x="908" y="539" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="white">Export All Sizes</text>
+</svg>
