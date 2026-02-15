@@ -6,6 +6,284 @@
 (function () {
   'use strict';
 
+  // ---- License Configuration ------------------------------------------------
+  // Replace these with your actual product IDs / store URLs after creating
+  // your products on Gumroad and LemonSqueezy.
+  const LICENSE_CONFIG = {
+    gumroad: {
+      productId: 'YOUR_GUMROAD_PRODUCT_ID',       // e.g. 'abcdef'
+      apiUrl: 'https://api.gumroad.com/v2/licenses/verify',
+      storeUrl: 'https://YOUR_HANDLE.gumroad.com/l/shotera',
+    },
+    lemonsqueezy: {
+      apiUrl: 'https://api.lemonsqueezy.com/v1/licenses/validate',
+      storeUrl: 'https://YOUR_STORE.lemonsqueezy.com/buy/shotera',
+    },
+  };
+
+  const STORAGE_KEY = 'shotera_license';
+
+  // ---- License Gate ---------------------------------------------------------
+
+  const licenseGate       = document.getElementById('license-gate');
+  const appContainer      = document.getElementById('app-container');
+  const licenseKeyInput   = document.getElementById('license-key-input');
+  const activateBtn       = document.getElementById('activate-btn');
+  const licenseError      = document.getElementById('license-error');
+  const licenseInfo       = document.getElementById('license-info');
+  const manageLicenseBtn  = document.getElementById('manage-license-btn');
+  const licenseModal      = document.getElementById('license-modal');
+  const closeLicenseModal = document.getElementById('close-license-modal');
+  const deactivateBtn     = document.getElementById('deactivate-btn');
+  const modalLicenseKey   = document.getElementById('modal-license-key');
+  const modalLicenseStatus = document.getElementById('modal-license-status');
+  const modalLicensePlatform = document.getElementById('modal-license-platform');
+  const buyGumroadLink    = document.getElementById('buy-gumroad-link');
+  const buyLemonsqueezyLink = document.getElementById('buy-lemonsqueezy-link');
+
+  // Set store links
+  buyGumroadLink.href = LICENSE_CONFIG.gumroad.storeUrl;
+  buyLemonsqueezyLink.href = LICENSE_CONFIG.lemonsqueezy.storeUrl;
+
+  function getSavedLicense() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }
+
+  function saveLicense(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function clearLicense() {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  function maskKey(key) {
+    if (!key || key.length < 8) return '••••••••';
+    return key.slice(0, 4) + '••••' + key.slice(-4);
+  }
+
+  function showLicenseError(msg) {
+    licenseError.textContent = msg;
+    licenseError.hidden = false;
+  }
+
+  function hideLicenseError() {
+    licenseError.hidden = true;
+  }
+
+  // ---- Gumroad License Verification ----------------------------------------
+
+  async function verifyGumroad(licenseKey) {
+    const body = new URLSearchParams({
+      product_id: LICENSE_CONFIG.gumroad.productId,
+      license_key: licenseKey,
+      increment_uses_count: 'true',
+    });
+
+    const res = await fetch(LICENSE_CONFIG.gumroad.apiUrl, {
+      method: 'POST',
+      body,
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      const purchase = data.purchase || {};
+      const isSubscription = !!purchase.subscription_id;
+      const cancelled = purchase.subscription_cancelled_at || purchase.subscription_failed_at;
+
+      if (isSubscription && cancelled) {
+        return { valid: false, error: 'Your subscription has expired. Please renew to continue.' };
+      }
+
+      return {
+        valid: true,
+        platform: 'gumroad',
+        key: licenseKey,
+        email: purchase.email || '',
+        productName: purchase.product_name || 'Shotera',
+        activatedAt: new Date().toISOString(),
+      };
+    }
+
+    return { valid: false, error: data.message || 'Invalid license key.' };
+  }
+
+  // ---- LemonSqueezy License Verification -----------------------------------
+
+  async function verifyLemonSqueezy(licenseKey) {
+    const res = await fetch(LICENSE_CONFIG.lemonsqueezy.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ license_key: licenseKey, instance_name: 'Shotera Web' }),
+    });
+
+    const data = await res.json();
+
+    if (data.valid) {
+      const meta = data.license_key || {};
+      return {
+        valid: true,
+        platform: 'lemonsqueezy',
+        key: licenseKey,
+        email: meta.user_email || '',
+        productName: meta.product_name || 'Shotera',
+        status: meta.status,
+        activatedAt: new Date().toISOString(),
+        instanceId: data.instance?.id || null,
+      };
+    }
+
+    const errMsg = data.error || 'Invalid license key.';
+    return { valid: false, error: errMsg };
+  }
+
+  // ---- Unified License Verification ----------------------------------------
+
+  async function verifyLicense(licenseKey) {
+    const key = licenseKey.trim();
+    if (!key) return { valid: false, error: 'Please enter a license key.' };
+
+    // Try Gumroad first, then LemonSqueezy
+    const errors = [];
+
+    try {
+      const result = await verifyGumroad(key);
+      if (result.valid) return result;
+      errors.push('Gumroad: ' + result.error);
+    } catch (e) {
+      errors.push('Gumroad: Unable to connect');
+    }
+
+    try {
+      const result = await verifyLemonSqueezy(key);
+      if (result.valid) return result;
+      errors.push('LemonSqueezy: ' + result.error);
+    } catch (e) {
+      errors.push('LemonSqueezy: Unable to connect');
+    }
+
+    return { valid: false, error: 'License key not recognized. Please check your key and try again.' };
+  }
+
+  // ---- License Revalidation ------------------------------------------------
+
+  async function revalidateLicense(saved) {
+    try {
+      if (saved.platform === 'gumroad') {
+        const result = await verifyGumroad(saved.key);
+        return result.valid;
+      } else if (saved.platform === 'lemonsqueezy') {
+        const result = await verifyLemonSqueezy(saved.key);
+        return result.valid;
+      }
+    } catch {
+      // If offline, allow cached license for grace period (7 days)
+      const activatedAt = new Date(saved.activatedAt || 0);
+      const daysSince = (Date.now() - activatedAt.getTime()) / (1000 * 60 * 60 * 24);
+      return daysSince < 7;
+    }
+    return false;
+  }
+
+  // ---- UI: Unlock App -------------------------------------------------------
+
+  function unlockApp(licenseData) {
+    licenseGate.hidden = true;
+    appContainer.hidden = false;
+    licenseInfo.hidden = false;
+
+    modalLicenseKey.textContent = maskKey(licenseData.key);
+    modalLicenseStatus.textContent = 'Active';
+    modalLicenseStatus.className = 'license-detail-value license-active';
+    modalLicensePlatform.textContent = licenseData.platform === 'gumroad' ? 'Gumroad' : 'LemonSqueezy';
+
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function lockApp() {
+    licenseGate.hidden = false;
+    appContainer.hidden = true;
+    licenseKeyInput.value = '';
+    hideLicenseError();
+    if (window.lucide) lucide.createIcons();
+  }
+
+  // ---- License Event Handlers -----------------------------------------------
+
+  activateBtn.addEventListener('click', async () => {
+    hideLicenseError();
+    const key = licenseKeyInput.value.trim();
+    if (!key) {
+      showLicenseError('Please enter a license key.');
+      return;
+    }
+
+    activateBtn.disabled = true;
+    activateBtn.innerHTML = '<i data-lucide="loader-2"></i> Verifying…';
+    if (window.lucide) lucide.createIcons();
+
+    const result = await verifyLicense(key);
+
+    if (result.valid) {
+      saveLicense(result);
+      unlockApp(result);
+    } else {
+      showLicenseError(result.error);
+    }
+
+    activateBtn.disabled = false;
+    activateBtn.innerHTML = '<i data-lucide="key-round"></i> Activate License';
+    if (window.lucide) lucide.createIcons();
+  });
+
+  licenseKeyInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') activateBtn.click();
+  });
+
+  manageLicenseBtn.addEventListener('click', () => {
+    licenseModal.hidden = false;
+    if (window.lucide) lucide.createIcons();
+  });
+
+  closeLicenseModal.addEventListener('click', () => {
+    licenseModal.hidden = true;
+  });
+
+  licenseModal.addEventListener('click', (e) => {
+    if (e.target === licenseModal) licenseModal.hidden = true;
+  });
+
+  deactivateBtn.addEventListener('click', () => {
+    clearLicense();
+    licenseModal.hidden = true;
+    lockApp();
+  });
+
+  // ---- License Check on Startup ---------------------------------------------
+
+  (async function checkLicenseOnStart() {
+    const saved = getSavedLicense();
+
+    if (saved && saved.key) {
+      // Unlock immediately with cached license, revalidate in background
+      unlockApp(saved);
+
+      const stillValid = await revalidateLicense(saved);
+      if (!stillValid) {
+        clearLicense();
+        lockApp();
+        showLicenseError('Your license is no longer valid. Please re-enter your key or renew your subscription.');
+      }
+    } else {
+      lockApp();
+    }
+  })();
+
   // ---- Device Specifications ------------------------------------------------
   const DEVICES = [
     // --- iPhone ---

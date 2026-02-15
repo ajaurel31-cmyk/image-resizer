@@ -11,10 +11,44 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-  <div class="container">
+  <!-- License Activation Gate -->
+  <div id="license-gate" class="license-gate">
+    <div class="license-gate-card">
+      <div class="license-gate-logo">
+        <i data-lucide="anvil"></i>
+      </div>
+      <h1>Shotera</h1>
+      <p class="license-gate-tagline">Professional screenshot designer for App Store &amp; Google Play</p>
+
+      <div class="license-gate-form">
+        <label for="license-key-input">Enter your license key</label>
+        <input type="text" id="license-key-input" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" spellcheck="false" autocomplete="off">
+        <div id="license-error" class="license-error" hidden></div>
+        <button id="activate-btn" class="btn btn-primary license-activate-btn">
+          <i data-lucide="key-round"></i> Activate License
+        </button>
+      </div>
+
+      <div class="license-gate-links">
+        <p>Don't have a license?</p>
+        <a href="#" id="buy-gumroad-link" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">
+          <i data-lucide="shopping-bag"></i> Buy on Gumroad
+        </a>
+        <a href="#" id="buy-lemonsqueezy-link" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">
+          <i data-lucide="citrus"></i> Buy on LemonSqueezy
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="app-container" hidden>
     <header>
       <h1><i data-lucide="anvil"></i> Shotera</h1>
       <p class="subtitle">Professional screenshot designer for App Store &amp; Google Play. Upload, design, and export.</p>
+      <div id="license-info" class="license-info">
+        <span id="license-status" class="license-status"><i data-lucide="check-circle-2"></i> Licensed</span>
+        <button id="manage-license-btn" class="btn btn-sm btn-secondary"><i data-lucide="settings"></i> License</button>
+      </div>
     </header>
 
     <!-- Step 1: Upload -->
@@ -279,6 +313,33 @@
     <footer class="app-footer">
       <p>Shotera &mdash; Professional screenshot designer for App Store &amp; Google Play</p>
     </footer>
+  </div>
+
+  <!-- License Management Modal -->
+  <div id="license-modal" class="license-modal-overlay" hidden>
+    <div class="license-modal">
+      <div class="license-modal-header">
+        <h3><i data-lucide="key-round"></i> License Management</h3>
+        <button id="close-license-modal" class="file-remove">&times;</button>
+      </div>
+      <div class="license-modal-body">
+        <div class="license-detail">
+          <span class="license-detail-label">License Key</span>
+          <span id="modal-license-key" class="license-detail-value license-key-masked">••••••••</span>
+        </div>
+        <div class="license-detail">
+          <span class="license-detail-label">Status</span>
+          <span id="modal-license-status" class="license-detail-value">Active</span>
+        </div>
+        <div class="license-detail">
+          <span class="license-detail-label">Platform</span>
+          <span id="modal-license-platform" class="license-detail-value">—</span>
+        </div>
+        <button id="deactivate-btn" class="btn btn-danger btn-sm" style="margin-top:1rem;width:100%;">
+          <i data-lucide="log-out"></i> Deactivate License
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
