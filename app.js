@@ -267,10 +267,6 @@
   // ---- License Check on Startup ---------------------------------------------
 
   (async function checkLicenseOnStart() {
-    // DEV BYPASS: skip license check
-    unlockApp({ key: 'dev', platform: 'gumroad', status: 'active' });
-    return;
-
     const saved = getSavedLicense();
 
     if (saved && saved.key) {
