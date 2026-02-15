@@ -95,58 +95,94 @@
       <div id="size-warning" class="warning" hidden></div>
     </section>
 
-    <!-- Step 2b: Caption Settings -->
-    <section id="caption-section" class="card" hidden>
-      <h2><i data-lucide="type"></i> Caption Overlay</h2>
-      <p class="section-desc">Add marketing text to your screenshots. Apple requires text to be large and readable.</p>
+    <!-- Step 2b: Screenshot Design -->
+    <section id="design-section" class="card" hidden>
+      <h2><i data-lucide="palette"></i> Screenshot Design</h2>
+      <p class="section-desc">Add professional marketing layouts with captions, backgrounds, and device frames.</p>
 
       <div class="caption-toggle">
         <label class="toggle-label">
-          <input type="checkbox" id="caption-enabled">
+          <input type="checkbox" id="design-enabled">
           <span class="toggle-switch"></span>
-          <span>Enable captions on screenshots</span>
+          <span>Enable screenshot design</span>
         </label>
       </div>
 
-      <div id="caption-fields" class="caption-fields" hidden>
-        <div class="caption-input-group">
-          <div class="setting-group">
-            <label for="caption-headline">Headline</label>
-            <input type="text" id="caption-headline" placeholder="Your App's Key Feature" maxlength="60">
-          </div>
-          <div class="setting-group">
-            <label for="caption-subtitle">Subtitle <span class="hint-inline">(optional)</span></label>
-            <input type="text" id="caption-subtitle" placeholder="A short description of what it does" maxlength="80">
-          </div>
+      <div id="design-fields" class="caption-fields" hidden>
+        <!-- Theme Presets -->
+        <div class="design-group">
+          <label class="design-group-label">Themes</label>
+          <div id="theme-presets" class="theme-presets"></div>
         </div>
 
-        <div class="settings-row caption-style-row">
-          <div class="setting-group">
-            <label for="caption-position">Text Position</label>
-            <select id="caption-position">
-              <option value="top">Top</option>
-              <option value="bottom">Bottom</option>
-            </select>
-          </div>
-          <div class="setting-group">
-            <label for="caption-bg-color">Background Color</label>
-            <div class="color-input-wrap">
-              <input type="color" id="caption-bg-color" value="#1a1a2e">
-              <span id="caption-bg-hex" class="color-hex">#1a1a2e</span>
+        <!-- Caption Text -->
+        <div class="design-group">
+          <label class="design-group-label">Caption Text</label>
+          <div class="caption-input-group">
+            <div class="setting-group">
+              <label for="caption-headline">Headline</label>
+              <input type="text" id="caption-headline" placeholder="Your App's Key Feature" maxlength="60">
             </div>
-          </div>
-          <div class="setting-group">
-            <label for="caption-text-color">Text Color</label>
-            <div class="color-input-wrap">
-              <input type="color" id="caption-text-color" value="#ffffff">
-              <span id="caption-text-hex" class="color-hex">#ffffff</span>
+            <div class="setting-group">
+              <label for="caption-subtitle">Subtitle <span class="hint-inline">(optional)</span></label>
+              <input type="text" id="caption-subtitle" placeholder="A short description of what it does" maxlength="80">
             </div>
           </div>
         </div>
 
-        <div class="caption-size-hint">
-          <i data-lucide="info"></i>
-          <span>Font sizes auto-scale per device to meet Apple's readability requirements. Headline ≈ 5.7% of width, subtitle ≈ 3.3%.</span>
+        <!-- Background & Colors -->
+        <div class="design-group">
+          <label class="design-group-label">Background &amp; Colors</label>
+          <div class="settings-row">
+            <div class="setting-group">
+              <label for="bg-type">Background Type</label>
+              <select id="bg-type">
+                <option value="gradient">Gradient</option>
+                <option value="solid">Solid Color</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <label for="bg-color-1">Color 1</label>
+              <div class="color-input-wrap">
+                <input type="color" id="bg-color-1" value="#0f0c29">
+                <span id="bg-hex-1" class="color-hex">#0f0c29</span>
+              </div>
+            </div>
+            <div class="setting-group" id="bg-color-2-group">
+              <label for="bg-color-2">Color 2</label>
+              <div class="color-input-wrap">
+                <input type="color" id="bg-color-2" value="#302b63">
+                <span id="bg-hex-2" class="color-hex">#302b63</span>
+              </div>
+            </div>
+          </div>
+          <div class="settings-row caption-colors-row">
+            <div class="setting-group">
+              <label for="text-color">Text Color</label>
+              <div class="color-input-wrap">
+                <input type="color" id="text-color" value="#ffffff">
+                <span id="text-hex" class="color-hex">#ffffff</span>
+              </div>
+            </div>
+            <div class="setting-group">
+              <label for="caption-position">Text Position</label>
+              <select id="caption-position">
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+              </select>
+            </div>
+            <div class="setting-group"></div>
+          </div>
+        </div>
+
+        <!-- Device Frame -->
+        <div class="design-group">
+          <label class="design-group-label">Device Frame</label>
+          <label class="toggle-label">
+            <input type="checkbox" id="device-frame-enabled" checked>
+            <span class="toggle-switch"></span>
+            <span>Show device frame around screenshot</span>
+          </label>
         </div>
       </div>
     </section>

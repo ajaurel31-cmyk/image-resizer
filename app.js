@@ -7,9 +7,6 @@
   'use strict';
 
   // ---- App Store Connect Device Specifications ----------------------------
-  // Each entry: { id, name, platform, portrait: [w,h], models, badge? }
-  // "badge" can be "required" or "recommended"; required are pre-checked.
-
   const DEVICES = [
     // --- iPhone ---
     { id: 'iphone_6_9', name: 'iPhone 6.9″', platform: 'iphone', portrait: [1260, 2736],
@@ -104,13 +101,24 @@
     { id: 'vision', label: 'Vision Pro' },
   ];
 
-  // Platforms where orientation toggle doesn't apply (fixed aspect)
   const FIXED_ORIENTATION_PLATFORMS = new Set(['mac', 'watch', 'tv', 'vision']);
+
+  // ---- Theme Presets ------------------------------------------------------
+  const THEMES = [
+    { name: 'Midnight',  bg1: '#0f0c29', bg2: '#302b63', text: '#ffffff' },
+    { name: 'Ocean',     bg1: '#2193b0', bg2: '#6dd5ed', text: '#ffffff' },
+    { name: 'Sunset',    bg1: '#ee0979', bg2: '#ff6a00', text: '#ffffff' },
+    { name: 'Forest',    bg1: '#134e5e', bg2: '#71b280', text: '#ffffff' },
+    { name: 'Lavender',  bg1: '#7b2ff7', bg2: '#c850c0', text: '#ffffff' },
+    { name: 'Minimal',   bg1: '#f5f5f7', bg2: '#f5f5f7', text: '#1d1d1f' },
+    { name: 'Dark',      bg1: '#1a1a1e', bg2: '#2d2d35', text: '#ffffff' },
+    { name: 'Rose',      bg1: '#ff9a9e', bg2: '#fecfef', text: '#2d1b33' },
+  ];
 
   // ---- State --------------------------------------------------------------
   const state = {
-    files: [],          // { file, img, objectUrl }
-    generated: [],      // { blob, name, width, height, deviceName, sourceFile }
+    files: [],
+    generated: [],
     activePlatform: 'iphone',
   };
 
@@ -120,16 +128,21 @@
   const fileListEl        = document.getElementById('file-list');
   const devicesSection    = document.getElementById('devices-section');
   const deviceListsEl     = document.getElementById('device-lists');
-  const captionSection    = document.getElementById('caption-section');
-  const captionEnabled    = document.getElementById('caption-enabled');
-  const captionFields     = document.getElementById('caption-fields');
+  const designSection     = document.getElementById('design-section');
+  const designEnabled     = document.getElementById('design-enabled');
+  const designFields      = document.getElementById('design-fields');
   const captionHeadline   = document.getElementById('caption-headline');
   const captionSubtitle   = document.getElementById('caption-subtitle');
   const captionPosition   = document.getElementById('caption-position');
-  const captionBgColor    = document.getElementById('caption-bg-color');
-  const captionTextColor  = document.getElementById('caption-text-color');
-  const captionBgHex      = document.getElementById('caption-bg-hex');
-  const captionTextHex    = document.getElementById('caption-text-hex');
+  const bgTypeSelect      = document.getElementById('bg-type');
+  const bgColor1          = document.getElementById('bg-color-1');
+  const bgColor2          = document.getElementById('bg-color-2');
+  const bgHex1            = document.getElementById('bg-hex-1');
+  const bgHex2            = document.getElementById('bg-hex-2');
+  const bgColor2Group     = document.getElementById('bg-color-2-group');
+  const textColorInput    = document.getElementById('text-color');
+  const textHex           = document.getElementById('text-hex');
+  const deviceFrameEnabled = document.getElementById('device-frame-enabled');
   const outputSection     = document.getElementById('output-section');
   const generateBtn       = document.getElementById('generate-btn');
   const downloadAllBtn    = document.getElementById('download-all-btn');
@@ -171,7 +184,6 @@
   function getDimensions(device) {
     const [pw, ph] = device.portrait;
     const orientation = getOrientation();
-    // Mac, Watch, TV, Vision: always use the spec dimensions as-is
     if (FIXED_ORIENTATION_PLATFORMS.has(device.platform)) {
       return { w: pw, h: ph };
     }
@@ -250,6 +262,48 @@
     });
   }
 
+  // ---- Theme presets UI ---------------------------------------------------
+
+  function buildThemePresets() {
+    const container = document.getElementById('theme-presets');
+    THEMES.forEach((theme, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'theme-swatch' + (i === 0 ? ' active' : '');
+      btn.title = theme.name;
+      btn.dataset.index = i;
+      btn.style.background = theme.bg1 === theme.bg2
+        ? theme.bg1
+        : `linear-gradient(135deg, ${theme.bg1}, ${theme.bg2})`;
+
+      const label = document.createElement('span');
+      label.className = 'theme-swatch-label';
+      label.textContent = theme.name;
+      btn.appendChild(label);
+
+      btn.addEventListener('click', () => applyTheme(i));
+      container.appendChild(btn);
+    });
+  }
+
+  function applyTheme(index) {
+    const theme = THEMES[index];
+    bgColor1.value = theme.bg1;
+    bgColor2.value = theme.bg2;
+    textColorInput.value = theme.text;
+    bgHex1.textContent = theme.bg1;
+    bgHex2.textContent = theme.bg2;
+    textHex.textContent = theme.text;
+    bgTypeSelect.value = theme.bg1 === theme.bg2 ? 'solid' : 'gradient';
+    updateBgTypeUI();
+
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.theme-swatch')[index]?.classList.add('active');
+  }
+
+  function updateBgTypeUI() {
+    bgColor2Group.style.display = bgTypeSelect.value === 'solid' ? 'none' : '';
+  }
+
   // ---- Platform tab switching ---------------------------------------------
 
   document.querySelector('.platform-tabs').addEventListener('click', (e) => {
@@ -282,14 +336,14 @@
     if (state.files.length === 0) {
       fileListEl.hidden = true;
       devicesSection.hidden = true;
-      captionSection.hidden = true;
+      designSection.hidden = true;
       outputSection.hidden = true;
       return;
     }
 
     fileListEl.hidden = false;
     devicesSection.hidden = false;
-    captionSection.hidden = false;
+    designSection.hidden = false;
     outputSection.hidden = false;
 
     fileListEl.innerHTML = '';
@@ -338,7 +392,6 @@
     });
 
     checkSizeWarnings();
-    // Re-init Lucide icons for dynamically created elements
     if (window.lucide) lucide.createIcons();
   }
 
@@ -362,7 +415,6 @@
       const srcH = entry.img.naturalHeight;
       for (const device of selectedDevices) {
         const { w, h } = getDimensions(device);
-        // Warn if upscaling significantly (source is much smaller than target)
         if (srcW < w * 0.5 || srcH < h * 0.5) {
           warnings.push(`"${entry.file.name}" (${srcW}×${srcH}) is much smaller than ${device.name} (${w}×${h}) — output may look blurry.`);
         }
@@ -394,10 +446,8 @@
     const srcH = img.naturalHeight;
 
     if (method === 'stretch') {
-      // Stretch source to fill target exactly
       stepDownDraw(ctx, img, srcW, srcH, targetW, targetH);
     } else if (method === 'fill') {
-      // Crop center: fill entire target, clip overflow
       const scale = Math.max(targetW / srcW, targetH / srcH);
       const sw = targetW / scale;
       const sh = targetH / scale;
@@ -405,7 +455,6 @@
       const sy = (srcH - sh) / 2;
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
     } else {
-      // Fit: letterbox with white background (no transparency allowed)
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, targetW, targetH);
       const scale = Math.min(targetW / srcW, targetH / srcH);
@@ -449,97 +498,22 @@
     }
   }
 
-  // ---- Caption helpers ----------------------------------------------------
+  // ---- Drawing helpers ----------------------------------------------------
 
-  function getCaptionConfig() {
-    if (!captionEnabled.checked) return null;
-    const headline = captionHeadline.value.trim();
-    if (!headline) return null;
-    return {
-      headline,
-      subtitle: captionSubtitle.value.trim(),
-      position: captionPosition.value,  // 'top' or 'bottom'
-      bgColor: captionBgColor.value,
-      textColor: captionTextColor.value,
-    };
+  function drawRoundedRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
   }
 
-  /**
-   * Calculate font sizes based on canvas width to meet Apple readability.
-   * Apple recommends text be clearly legible on device — roughly equivalent
-   * to 40pt+ at 1x on iPhone. We scale proportionally by canvas width.
-   */
-  function getCaptionFontSizes(canvasW, canvasH) {
-    // Headline: ~5.7% of width, subtitle: ~3.3% of width
-    // These ratios produce large, readable text across all device sizes.
-    const headline = Math.max(Math.round(canvasW * 0.057), 32);
-    const subtitle = Math.max(Math.round(canvasW * 0.033), 22);
-    // Caption area height: 25% of total canvas
-    const areaHeight = Math.round(canvasH * 0.25);
-    return { headline, subtitle, areaHeight };
-  }
-
-  /**
-   * Draw caption text on canvas at the specified position.
-   * Wraps long lines to prevent text from overflowing.
-   */
-  function drawCaption(ctx, canvasW, canvasH, caption) {
-    const sizes = getCaptionFontSizes(canvasW, canvasH);
-    const position = caption.position;
-
-    // Caption area Y position
-    const areaY = position === 'top' ? 0 : canvasH - sizes.areaHeight;
-
-    // Draw background
-    ctx.fillStyle = caption.bgColor;
-    ctx.fillRect(0, areaY, canvasW, sizes.areaHeight);
-
-    // Text setup
-    ctx.fillStyle = caption.textColor;
-    ctx.textAlign = 'center';
-    const centerX = canvasW / 2;
-    const maxTextWidth = canvasW * 0.85;
-
-    // Vertical layout within caption area
-    const hasSubtitle = caption.subtitle.length > 0;
-    const lineGap = Math.round(sizes.headline * 0.35);
-
-    // Draw headline (bold)
-    ctx.font = `800 ${sizes.headline}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-    const headlineLines = wrapText(ctx, caption.headline, maxTextWidth);
-
-    // Draw subtitle (regular weight)
-    ctx.font = `500 ${sizes.subtitle}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-    const subtitleLines = hasSubtitle ? wrapText(ctx, caption.subtitle, maxTextWidth) : [];
-
-    // Calculate total text block height for vertical centering
-    const headlineBlockH = headlineLines.length * (sizes.headline * 1.2);
-    const subtitleBlockH = subtitleLines.length * (sizes.subtitle * 1.2);
-    const totalTextH = headlineBlockH + (hasSubtitle ? lineGap + subtitleBlockH : 0);
-    let textY = areaY + (sizes.areaHeight - totalTextH) / 2 + sizes.headline;
-
-    // Draw headline lines
-    ctx.font = `800 ${sizes.headline}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-    ctx.textBaseline = 'alphabetic';
-    for (const line of headlineLines) {
-      ctx.fillText(line, centerX, textY);
-      textY += sizes.headline * 1.2;
-    }
-
-    // Draw subtitle lines
-    if (hasSubtitle) {
-      textY += lineGap - sizes.headline * 0.2;
-      ctx.font = `500 ${sizes.subtitle}px Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-      for (const line of subtitleLines) {
-        ctx.fillText(line, centerX, textY);
-        textY += sizes.subtitle * 1.2;
-      }
-    }
-  }
-
-  /**
-   * Word-wrap text into lines that fit within maxWidth.
-   */
   function wrapText(ctx, text, maxWidth) {
     const words = text.split(' ');
     const lines = [];
@@ -558,40 +532,282 @@
     return lines;
   }
 
+  // ---- Design config ------------------------------------------------------
+
+  function getDesignConfig() {
+    if (!designEnabled.checked) return null;
+    return {
+      headline: captionHeadline.value.trim(),
+      subtitle: captionSubtitle.value.trim(),
+      position: captionPosition.value,
+      bgType: bgTypeSelect.value,
+      bgColor1: bgColor1.value,
+      bgColor2: bgColor2.value,
+      textColor: textColorInput.value,
+      deviceFrame: deviceFrameEnabled.checked,
+    };
+  }
+
+  // ---- Draw background gradient/solid -------------------------------------
+
+  function drawBackground(ctx, w, h, design) {
+    if (design.bgType === 'gradient') {
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, design.bgColor1);
+      grad.addColorStop(1, design.bgColor2);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = design.bgColor1;
+    }
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // ---- Draw device frame with screenshot inside ---------------------------
+
+  function drawDeviceWithScreenshot(ctx, img, areaY, areaW, areaH, platform) {
+    const padding = areaW * 0.06;
+    const maxFrameW = areaW - padding * 2;
+    const maxFrameH = areaH - padding * 2;
+
+    // Aspect ratios for device frames (width/height)
+    let frameAspect;
+    if (platform === 'ipad') {
+      frameAspect = 0.72;
+    } else if (platform === 'mac') {
+      frameAspect = 1.6; // landscape
+    } else {
+      frameAspect = 0.49; // iPhone-like for phone/watch
+    }
+
+    let frameW, frameH;
+
+    if (platform === 'mac') {
+      // Mac: landscape frame
+      frameW = Math.min(maxFrameW * 0.85, maxFrameH * frameAspect);
+      frameH = frameW / frameAspect;
+      if (frameH > maxFrameH * 0.85) {
+        frameH = maxFrameH * 0.85;
+        frameW = frameH * frameAspect;
+      }
+    } else {
+      // Portrait devices
+      frameH = maxFrameH;
+      frameW = frameH * frameAspect;
+
+      if (frameW > maxFrameW) {
+        frameW = maxFrameW;
+        frameH = frameW / frameAspect;
+      }
+
+      // Limit width for phones to look proportional
+      if ((platform === 'iphone' || platform === 'watch') && frameW > areaW * 0.52) {
+        frameW = areaW * 0.52;
+        frameH = frameW / frameAspect;
+      }
+    }
+
+    // Center frame in area
+    const frameX = (areaW - frameW) / 2;
+    const frameY = areaY + (areaH - frameH) / 2;
+
+    // Device body proportions
+    const cornerR = platform === 'mac' ? frameW * 0.02 : frameW * 0.07;
+    const bezelSide = frameW * 0.022;
+    const bezelTop = platform === 'mac' ? frameH * 0.03 : frameH * 0.015;
+    const bezelBottom = platform === 'mac' ? frameH * 0.03 : frameH * 0.015;
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = frameW * 0.06;
+    ctx.shadowOffsetY = frameW * 0.02;
+
+    // Device body
+    ctx.fillStyle = '#1a1a1a';
+    drawRoundedRect(ctx, frameX, frameY, frameW, frameH, cornerR);
+    ctx.fill();
+    ctx.restore();
+
+    // Subtle border highlight
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    drawRoundedRect(ctx, frameX, frameY, frameW, frameH, cornerR);
+    ctx.stroke();
+
+    // Side button details for iPhone
+    if (platform === 'iphone') {
+      ctx.fillStyle = '#2a2a2a';
+      // Power button (right side)
+      const btnW = 3;
+      const btnH = frameH * 0.06;
+      const btnX = frameX + frameW;
+      const btnY = frameY + frameH * 0.22;
+      drawRoundedRect(ctx, btnX, btnY, btnW, btnH, 1.5);
+      ctx.fill();
+      // Volume buttons (left side)
+      const volBtnH = frameH * 0.04;
+      ctx.fillStyle = '#2a2a2a';
+      drawRoundedRect(ctx, frameX - btnW, frameY + frameH * 0.18, btnW, volBtnH, 1.5);
+      ctx.fill();
+      drawRoundedRect(ctx, frameX - btnW, frameY + frameH * 0.24, btnW, volBtnH, 1.5);
+      ctx.fill();
+    }
+
+    // Screen area
+    const screenX = frameX + bezelSide;
+    const screenY = frameY + bezelTop;
+    const screenW = frameW - bezelSide * 2;
+    const screenH = frameH - bezelTop - bezelBottom;
+    const screenCornerR = cornerR * 0.85;
+
+    // Draw screenshot into screen area (fill/crop to fit)
+    ctx.save();
+    drawRoundedRect(ctx, screenX, screenY, screenW, screenH, screenCornerR);
+    ctx.clip();
+
+    const srcW = img.naturalWidth;
+    const srcH = img.naturalHeight;
+    const scale = Math.max(screenW / srcW, screenH / srcH);
+    const drawW = srcW * scale;
+    const drawH = srcH * scale;
+    const drawX = screenX + (screenW - drawW) / 2;
+    const drawY = screenY + (screenH - drawH) / 2;
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+
+    // Dynamic Island (iPhone)
+    if (platform === 'iphone') {
+      const pillW = frameW * 0.22;
+      const pillH = frameW * 0.03;
+      const pillX = frameX + (frameW - pillW) / 2;
+      const pillY = screenY + screenH * 0.012;
+      ctx.fillStyle = '#000000';
+      drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+      ctx.fill();
+    }
+
+    // Home indicator bar (iPhone/iPad)
+    if (platform === 'iphone' || platform === 'ipad') {
+      const barW = frameW * 0.30;
+      const barH = frameW * 0.012;
+      const barX = frameX + (frameW - barW) / 2;
+      const barY = screenY + screenH - screenH * 0.025;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      drawRoundedRect(ctx, barX, barY, barW, barH, barH / 2);
+      ctx.fill();
+    }
+
+    // Mac: draw keyboard/base area
+    if (platform === 'mac') {
+      const baseH = frameH * 0.04;
+      const baseY = frameY + frameH;
+      const baseW = frameW * 1.05;
+      const baseX = frameX - (baseW - frameW) / 2;
+      ctx.fillStyle = '#2a2a2a';
+      drawRoundedRect(ctx, baseX, baseY, baseW, baseH, baseH * 0.4);
+      ctx.fill();
+      // Hinge line
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(frameX, baseY);
+      ctx.lineTo(frameX + frameW, baseY);
+      ctx.stroke();
+    }
+  }
+
+  // ---- Draw caption text --------------------------------------------------
+
+  function drawCaptionText(ctx, canvasW, captionY, captionH, design) {
+    const headlineSize = Math.max(Math.round(canvasW * 0.057), 32);
+    const subtitleSize = Math.max(Math.round(canvasW * 0.033), 22);
+    const fontStack = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+    ctx.fillStyle = design.textColor;
+    ctx.textAlign = 'center';
+    const centerX = canvasW / 2;
+    const maxTextWidth = canvasW * 0.85;
+
+    const hasSubtitle = design.subtitle.length > 0;
+    const lineGap = Math.round(headlineSize * 0.35);
+
+    // Measure headline
+    ctx.font = `800 ${headlineSize}px ${fontStack}`;
+    const headlineLines = wrapText(ctx, design.headline, maxTextWidth);
+
+    // Measure subtitle
+    ctx.font = `500 ${subtitleSize}px ${fontStack}`;
+    const subtitleLines = hasSubtitle ? wrapText(ctx, design.subtitle, maxTextWidth) : [];
+
+    // Calculate total block height for vertical centering
+    const headlineBlockH = headlineLines.length * (headlineSize * 1.2);
+    const subtitleBlockH = subtitleLines.length * (subtitleSize * 1.2);
+    const totalTextH = headlineBlockH + (hasSubtitle ? lineGap + subtitleBlockH : 0);
+    let textY = captionY + (captionH - totalTextH) / 2 + headlineSize;
+
+    // Draw headline
+    ctx.font = `800 ${headlineSize}px ${fontStack}`;
+    ctx.textBaseline = 'alphabetic';
+    for (const line of headlineLines) {
+      ctx.fillText(line, centerX, textY);
+      textY += headlineSize * 1.2;
+    }
+
+    // Draw subtitle
+    if (hasSubtitle) {
+      textY += lineGap - headlineSize * 0.2;
+      ctx.font = `500 ${subtitleSize}px ${fontStack}`;
+      for (const line of subtitleLines) {
+        ctx.fillText(line, centerX, textY);
+        textY += subtitleSize * 1.2;
+      }
+    }
+  }
+
   // ---- Generate screenshots for one source + one device -------------------
 
   function generateScreenshot(entry, device) {
     return new Promise((resolve) => {
       const { w, h } = getDimensions(device);
       const method = resizeMethod.value;
-      const caption = getCaptionConfig();
+      const design = getDesignConfig();
 
       let canvas;
-      if (caption) {
-        // With caption: allocate 25% to text area, 75% to image
-        const sizes = getCaptionFontSizes(w, h);
-        const imgH = h - sizes.areaHeight;
 
-        // Resize image to fit the image portion of the canvas
-        const imgCanvas = resizeToCanvas(entry.img, w, imgH, method);
-
-        // Create final canvas at full device dimensions
+      if (design) {
         canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
-        // Fill entire canvas with caption background (avoids gaps)
-        ctx.fillStyle = caption.bgColor;
-        ctx.fillRect(0, 0, w, h);
+        // 1. Draw gradient/solid background
+        drawBackground(ctx, w, h, design);
 
-        // Draw image in the non-caption area
-        const imgY = caption.position === 'top' ? sizes.areaHeight : 0;
-        ctx.drawImage(imgCanvas, 0, imgY);
+        // 2. Calculate layout
+        const hasCaption = design.headline.length > 0;
+        const captionRatio = hasCaption ? 0.22 : 0;
+        const captionH = Math.round(h * captionRatio);
+        const contentH = h - captionH;
+        const contentY = design.position === 'top' ? captionH : 0;
 
-        // Draw caption text
-        drawCaption(ctx, w, h, caption);
+        // 3. Draw screenshot (with or without device frame)
+        if (design.deviceFrame) {
+          drawDeviceWithScreenshot(ctx, entry.img, contentY, w, contentH, device.platform);
+        } else {
+          // No frame: draw image into content area
+          const imgCanvas = resizeToCanvas(entry.img, w, contentH, method);
+          ctx.drawImage(imgCanvas, 0, contentY);
+        }
+
+        // 4. Draw caption text
+        if (hasCaption) {
+          const captionY = design.position === 'top' ? 0 : contentH;
+          drawCaptionText(ctx, w, captionY, captionH, design);
+        }
       } else {
+        // No design: plain resize
         canvas = resizeToCanvas(entry.img, w, h, method);
       }
 
@@ -655,7 +871,6 @@
   function renderOutput() {
     outputGrid.innerHTML = '';
 
-    // Group by device
     const groups = new Map();
     for (const item of state.generated) {
       if (!groups.has(item.deviceId)) {
@@ -727,7 +942,6 @@
 
     const zip = new JSZip();
     for (const item of state.generated) {
-      // Organize into folders per device
       const folder = item.deviceName.replace(/[^a-zA-Z0-9 ._-]/g, '').replace(/\s+/g, '_');
       zip.file(`${folder}/${item.name}`, item.blob);
     }
@@ -778,18 +992,30 @@
     renderFileList();
   }
 
-  // Caption toggle & color sync
-  captionEnabled.addEventListener('change', () => {
-    captionFields.hidden = !captionEnabled.checked;
+  // Design toggle & controls
+  designEnabled.addEventListener('change', () => {
+    designFields.hidden = !designEnabled.checked;
     if (window.lucide) lucide.createIcons();
   });
 
-  captionBgColor.addEventListener('input', () => {
-    captionBgHex.textContent = captionBgColor.value;
+  bgTypeSelect.addEventListener('change', () => {
+    updateBgTypeUI();
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
   });
 
-  captionTextColor.addEventListener('input', () => {
-    captionTextHex.textContent = captionTextColor.value;
+  bgColor1.addEventListener('input', () => {
+    bgHex1.textContent = bgColor1.value;
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+  });
+
+  bgColor2.addEventListener('input', () => {
+    bgHex2.textContent = bgColor2.value;
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+  });
+
+  textColorInput.addEventListener('input', () => {
+    textHex.textContent = textColorInput.value;
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
   });
 
   // Quality slider
@@ -803,4 +1029,6 @@
 
   // ---- Init ---------------------------------------------------------------
   buildDeviceLists();
+  buildThemePresets();
+  updateBgTypeUI();
 })();
