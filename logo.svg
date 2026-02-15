@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="screen-grad" x1="180" y1="140" x2="332" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c4b5fd"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Phone body -->
+  <rect x="160" y="96" width="192" height="320" rx="28" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="8"/>
+
+  <!-- Screen -->
+  <rect x="176" y="128" width="160" height="256" rx="8" fill="url(#screen-grad)" opacity="0.35"/>
+
+  <!-- Screen content lines (representing a screenshot) -->
+  <rect x="196" y="168" width="80" height="8" rx="4" fill="white" opacity="0.7"/>
+  <rect x="196" y="188" width="120" height="6" rx="3" fill="white" opacity="0.4"/>
+  <rect x="196" y="204" width="100" height="6" rx="3" fill="white" opacity="0.4"/>
+  <rect x="196" y="228" width="120" height="56" rx="8" fill="white" opacity="0.2"/>
+  <rect x="196" y="300" width="60" height="6" rx="3" fill="white" opacity="0.4"/>
+  <rect x="196" y="316" width="90" height="6" rx="3" fill="white" opacity="0.3"/>
+
+  <!-- Crop/viewfinder brackets — top-left -->
+  <path d="M120 160 L120 112 L168 112" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Crop/viewfinder brackets — top-right -->
+  <path d="M392 112 L344 112 M392 112 L392 160" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Crop/viewfinder brackets — bottom-left -->
+  <path d="M120 352 L120 400 L168 400" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Crop/viewfinder brackets — bottom-right -->
+  <path d="M392 400 L344 400 M392 400 L392 352" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

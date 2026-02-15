@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shotera OG Image</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background: #0f0f14;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 30% 40%, rgba(139,92,246,0.18), transparent),
+      radial-gradient(ellipse 50% 50% at 90% 70%, rgba(59,130,246,0.10), transparent);
+    display: flex;
+    color: #fff;
+  }
+
+  .left {
+    flex: 0 0 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 56px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-icon svg { width: 28px; height: 28px; }
+
+  .logo-text {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .headline {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+
+  .headline em {
+    font-style: normal;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subline {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #8b8b9e;
+    margin-bottom: 32px;
+    max-width: 380px;
+  }
+
+  .price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    font-size: 15px;
+    font-weight: 700;
+    color: #c4b5fd;
+  }
+
+  .price-badge .price {
+    font-size: 22px;
+    color: #fff;
+  }
+
+  /* Right side — mock app UI */
+  .right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .app-mock {
+    width: 640px;
+    height: 480px;
+    background: #1c1c27;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px 0 0 14px;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.4);
+    padding: 20px 24px;
+    position: relative;
+    right: -40px;
+  }
+
+  .mock-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mock-dot.r { background: #f87171; }
+  .mock-dot.y { background: #fbbf24; }
+  .mock-dot.g { background: #34d399; }
+
+  .mock-title {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: #8b8b9e;
+    font-weight: 600;
+  }
+
+  .mock-devices {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .mock-tab {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b8b9e;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .mock-tab.active {
+    background: rgba(139,92,246,0.15);
+    border-color: rgba(139,92,246,0.3);
+    color: #eee;
+  }
+
+  .mock-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .mock-screenshot {
+    border-radius: 8px;
+    aspect-ratio: 9/16;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mock-screenshot .phone {
+    position: absolute;
+    inset: 12%;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .mock-screenshot .caption {
+    position: absolute;
+    top: 4%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 8px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .s1 { background: linear-gradient(135deg, #0f0c29, #302b63); }
+  .s2 { background: linear-gradient(135deg, #ee0979, #ff6a00); }
+  .s3 { background: linear-gradient(135deg, #134e5e, #71b280); }
+  .s4 { background: linear-gradient(135deg, #2193b0, #6dd5ed); }
+  .s5 { background: linear-gradient(135deg, #7b2ff7, #c850c0); }
+  .s6 { background: linear-gradient(135deg, #f5f5f7, #f5f5f7); }
+
+  .mock-screenshot .line {
+    position: absolute;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.4);
+  }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="6" width="12" height="20" rx="2.5" stroke="white" stroke-width="1.5" fill="rgba(255,255,255,0.15)"/>
+          <rect x="11.5" y="8.5" width="9" height="14" rx="1" fill="white" opacity="0.3"/>
+          <path d="M7 10.5 L7 7 L10.5 7" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M25 7 L21.5 7 M25 7 L25 10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 21.5 L7 25 L10.5 25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M25 25 L21.5 25 M25 25 L25 21.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">Shotera</span>
+    </div>
+    <h1 class="headline">App Store<br>Screenshots<br>in <em>Seconds</em></h1>
+    <p class="subline">Professional screenshot designer for App Store &amp; Google Play. No Figma. No Photoshop. Just drag, design, download.</p>
+    <div class="price-badge">
+      <span class="price">$29</span> One-Time Purchase
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="app-mock">
+      <div class="mock-header">
+        <div class="mock-dot r"></div>
+        <div class="mock-dot y"></div>
+        <div class="mock-dot g"></div>
+        <div class="mock-title">Shotera</div>
+        <div style="width:30px"></div>
+      </div>
+      <div class="mock-devices">
+        <div class="mock-tab active">iPhone</div>
+        <div class="mock-tab">iPad</div>
+        <div class="mock-tab">Mac</div>
+        <div class="mock-tab">Android</div>
+      </div>
+      <div class="mock-grid">
+        <div class="mock-screenshot s1">
+          <div class="caption">Fast & Secure</div>
+          <div class="phone"></div>
+        </div>
+        <div class="mock-screenshot s2">
+          <div class="caption">Easy Setup</div>
+          <div class="phone"></div>
+        </div>
+        <div class="mock-screenshot s3">
+          <div class="caption">Dark Mode</div>
+          <div class="phone"></div>
+        </div>
+        <div class="mock-screenshot s4">
+          <div class="caption">Analytics</div>
+          <div class="phone"></div>
+        </div>
+        <div class="mock-screenshot s5">
+          <div class="caption">Sync</div>
+          <div class="phone"></div>
+        </div>
+        <div class="mock-screenshot s6">
+          <div class="caption" style="color:#1d1d1f;">Clean UI</div>
+          <div class="phone" style="border-color:rgba(0,0,0,0.15);background:rgba(0,0,0,0.04);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

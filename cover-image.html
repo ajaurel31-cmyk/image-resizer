@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shotera — Product Cover (1280x720)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background: #0f0f14;
+    background-image:
+      radial-gradient(ellipse 90% 70% at 35% 30%, rgba(139,92,246,0.20), transparent),
+      radial-gradient(ellipse 60% 50% at 85% 75%, rgba(59,130,246,0.12), transparent),
+      radial-gradient(circle at 10% 90%, rgba(99,102,241,0.08), transparent);
+    display: flex;
+    color: #fff;
+    position: relative;
+  }
+
+  /* Subtle grid pattern */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .left {
+    flex: 0 0 520px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 64px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .logo-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
+  }
+
+  .logo-icon svg { width: 30px; height: 30px; }
+
+  .logo-text {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .headline {
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    margin-bottom: 18px;
+  }
+
+  .headline em {
+    font-style: normal;
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subline {
+    font-size: 16.5px;
+    line-height: 1.65;
+    color: #8b8b9e;
+    margin-bottom: 36px;
+    max-width: 400px;
+  }
+
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .feature-tag {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #a5a5b8;
+  }
+
+  .price-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 26px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1));
+    border: 1px solid rgba(139,92,246,0.3);
+    font-size: 15px;
+    font-weight: 700;
+    color: #c4b5fd;
+  }
+
+  .price-badge .price {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .lifetime {
+    font-size: 13px;
+    color: #34d399;
+    font-weight: 600;
+  }
+
+  /* Right side — 3 floating phone screenshots */
+  .right {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phone-card {
+    position: absolute;
+    width: 220px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 1px rgba(255,255,255,0.1) inset;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .phone-card .screen {
+    aspect-ratio: 9/17;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 24px;
+  }
+
+  .phone-card .caption-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+    margin-bottom: 12px;
+    text-align: center;
+    padding: 0 12px;
+    line-height: 1.3;
+  }
+
+  .phone-card .device-frame {
+    width: 70%;
+    aspect-ratio: 9/16;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.07);
+    position: relative;
+  }
+
+  .phone-card .device-frame .bar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.3);
+  }
+
+  .phone-card .device-frame .bar1 { top: 18%; width: 45%; }
+  .phone-card .device-frame .bar2 { top: 26%; width: 65%; opacity: 0.5; }
+  .phone-card .device-frame .bar3 { top: 34%; width: 55%; opacity: 0.4; }
+  .phone-card .device-frame .block {
+    position: absolute;
+    top: 44%;
+    left: 12%;
+    right: 12%;
+    height: 30%;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .card1 {
+    background: linear-gradient(135deg, #0f0c29, #302b63);
+    top: 40px;
+    left: 60px;
+    transform: rotate(-6deg);
+    z-index: 1;
+  }
+
+  .card2 {
+    background: linear-gradient(135deg, #ee0979, #ff6a00);
+    top: 20px;
+    left: 280px;
+    transform: rotate(3deg);
+    z-index: 3;
+  }
+
+  .card3 {
+    background: linear-gradient(135deg, #134e5e, #71b280);
+    top: 100px;
+    left: 500px;
+    transform: rotate(-2deg);
+    z-index: 2;
+  }
+
+  /* Platform badges floating */
+  .platform-pills {
+    position: absolute;
+    bottom: 60px;
+    left: 100px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .pill-apple {
+    background: rgba(139,92,246,0.2);
+    color: #c4b5fd;
+  }
+
+  .pill-google {
+    background: rgba(52,211,153,0.15);
+    color: #6ee7b7;
+  }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="6" width="12" height="20" rx="2.5" stroke="white" stroke-width="1.5" fill="rgba(255,255,255,0.15)"/>
+          <rect x="11.5" y="8.5" width="9" height="14" rx="1" fill="white" opacity="0.3"/>
+          <path d="M7 10.5 L7 7 L10.5 7" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M25 7 L21.5 7 M25 7 L25 10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 21.5 L7 25 L10.5 25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M25 25 L21.5 25 M25 25 L25 21.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">Shotera</span>
+    </div>
+
+    <h1 class="headline">App Store<br>Screenshots<br>in <em>Seconds</em></h1>
+    <p class="subline">Upload, design, and export pixel-perfect screenshots for every device Apple and Google require.</p>
+
+    <div class="features">
+      <span class="feature-tag">iPhone</span>
+      <span class="feature-tag">iPad</span>
+      <span class="feature-tag">Mac</span>
+      <span class="feature-tag">Watch</span>
+      <span class="feature-tag">Vision Pro</span>
+      <span class="feature-tag">Android</span>
+      <span class="feature-tag">12 Themes</span>
+      <span class="feature-tag">Device Frames</span>
+    </div>
+
+    <div class="price-row">
+      <div class="price-badge">
+        <span class="price">$29</span> One-Time
+      </div>
+      <span class="lifetime">Lifetime updates included</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="phone-card card1">
+      <div class="screen">
+        <div class="caption-text">Fast & Secure</div>
+        <div class="device-frame">
+          <div class="bar bar1"></div>
+          <div class="bar bar2"></div>
+          <div class="bar bar3"></div>
+          <div class="block"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-card card2">
+      <div class="screen">
+        <div class="caption-text">Easy Setup</div>
+        <div class="device-frame">
+          <div class="bar bar1"></div>
+          <div class="bar bar2"></div>
+          <div class="bar bar3"></div>
+          <div class="block"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-card card3">
+      <div class="screen">
+        <div class="caption-text">Dark Mode</div>
+        <div class="device-frame">
+          <div class="bar bar1"></div>
+          <div class="bar bar2"></div>
+          <div class="bar bar3"></div>
+          <div class="block"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="platform-pills">
+      <span class="pill pill-apple">App Store</span>
+      <span class="pill pill-google">Google Play</span>
+    </div>
+  </div>
+</body>
+</html>

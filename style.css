@@ -67,11 +67,17 @@ header h1 {
   gap: 0.5rem;
 }
 
-header h1 i {
+header h1 i,
+header h1 .header-logo {
   -webkit-text-fill-color: initial;
   color: var(--primary);
   width: 32px;
   height: 32px;
+}
+
+.header-logo {
+  vertical-align: middle;
+  margin-top: -2px;
 }
 
 .subtitle {
