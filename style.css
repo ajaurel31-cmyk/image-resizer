@@ -42,6 +42,64 @@ body {
     radial-gradient(ellipse 60% 40% at 80% 60%, rgba(59,130,246,0.05), transparent);
 }
 
+/* ---- Thank You Banner ---- */
+.thank-you-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--gradient-subtle);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.thank-you-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.thank-you-content > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+  width: 24px;
+  height: 24px;
+}
+
+.thank-you-content strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.thank-you-content p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.thank-you-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.thank-you-dismiss:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.thank-you-banner[hidden] {
+  display: none;
+}
+
 /* ---- Layout ---- */
 .container {
   max-width: 960px;

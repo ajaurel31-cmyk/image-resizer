@@ -1793,6 +1793,17 @@
   generateBtn.addEventListener('click', handleGenerate);
   downloadAllBtn.addEventListener('click', handleDownloadAll);
 
+  // ---- Thank You Banner ----------------------------------------------------
+  const thankYouBanner = document.getElementById('thank-you-banner');
+  const dismissThankYou = document.getElementById('dismiss-thank-you');
+  if (localStorage.getItem('shotera_thank_you_dismissed')) {
+    thankYouBanner.hidden = true;
+  }
+  dismissThankYou.addEventListener('click', () => {
+    thankYouBanner.hidden = true;
+    localStorage.setItem('shotera_thank_you_dismissed', '1');
+  });
+
   // ---- Init ----------------------------------------------------------------
   buildDeviceLists();
   buildLayoutTemplates();
