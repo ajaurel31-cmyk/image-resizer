@@ -11,7 +11,7 @@
   // your products on Gumroad and LemonSqueezy.
   const LICENSE_CONFIG = {
     gumroad: {
-      productId: 'gfhnpo',
+      productId: 'c2kbUVmxFMM13y3KoHy7fA==',
       apiUrl: '/api/verify-gumroad',
       storeUrl: 'https://ajavibe40.gumroad.com/l/gfhnpo',
     },
