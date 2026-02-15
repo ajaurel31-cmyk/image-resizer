@@ -1,42 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#8b5cf6"/>
-      <stop offset="50%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#3b82f6"/>
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#2563eb"/>
     </linearGradient>
-    <linearGradient id="screen-grad" x1="180" y1="140" x2="332" y2="400" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#c4b5fd"/>
-      <stop offset="100%" stop-color="#818cf8"/>
+    <linearGradient id="card" x1="96" y1="96" x2="384" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="white" stop-opacity="0.97"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.88"/>
     </linearGradient>
+    <linearGradient id="img" x1="128" y1="148" x2="340" y2="310" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="sparkle" x1="340" y1="56" x2="440" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="card-shadow" x="-8%" y="-4%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1e1b4b" flood-opacity="0.15"/>
+    </filter>
+    <filter id="sparkle-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
   <!-- Rounded square background -->
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
 
-  <!-- Phone body -->
-  <rect x="160" y="96" width="192" height="320" rx="28" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="8"/>
+  <!-- Subtle radial highlight -->
+  <circle cx="200" cy="180" r="220" fill="white" opacity="0.06"/>
 
-  <!-- Screen -->
-  <rect x="176" y="128" width="160" height="256" rx="8" fill="url(#screen-grad)" opacity="0.35"/>
+  <!-- Phone/screenshot card -->
+  <rect x="96" y="104" width="280" height="312" rx="28" fill="url(#card)" filter="url(#card-shadow)"/>
 
-  <!-- Screen content lines (representing a screenshot) -->
-  <rect x="196" y="168" width="80" height="8" rx="4" fill="white" opacity="0.7"/>
-  <rect x="196" y="188" width="120" height="6" rx="3" fill="white" opacity="0.4"/>
-  <rect x="196" y="204" width="100" height="6" rx="3" fill="white" opacity="0.4"/>
-  <rect x="196" y="228" width="120" height="56" rx="8" fill="white" opacity="0.2"/>
-  <rect x="196" y="300" width="60" height="6" rx="3" fill="white" opacity="0.4"/>
-  <rect x="196" y="316" width="90" height="6" rx="3" fill="white" opacity="0.3"/>
+  <!-- Image area inside card -->
+  <rect x="124" y="136" width="224" height="160" rx="16" fill="url(#img)"/>
 
-  <!-- Crop/viewfinder brackets — top-left -->
-  <path d="M120 160 L120 112 L168 112" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Mountain/landscape in image area -->
+  <path d="M124 260 L196 196 L248 240 L292 188 L348 260 L348 280 Q348 296 332 296 L140 296 Q124 296 124 280Z" fill="white" opacity="0.25"/>
 
-  <!-- Crop/viewfinder brackets — top-right -->
-  <path d="M392 112 L344 112 M392 112 L392 160" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Sun in image -->
+  <circle cx="168" cy="176" r="20" fill="white" opacity="0.45"/>
 
-  <!-- Crop/viewfinder brackets — bottom-left -->
-  <path d="M120 352 L120 400 L168 400" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Text lines below image -->
+  <rect x="124" y="324" width="152" height="14" rx="7" fill="#c4b5fd" opacity="0.6"/>
+  <rect x="124" y="354" width="100" height="14" rx="7" fill="#c4b5fd" opacity="0.4"/>
+  <rect x="124" y="384" width="64" height="12" rx="6" fill="#c4b5fd" opacity="0.3"/>
 
-  <!-- Crop/viewfinder brackets — bottom-right -->
-  <path d="M392 400 L344 400 M392 400 L392 352" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Sparkle/magic star -->
+  <g filter="url(#sparkle-glow)">
+    <path d="M396 100 L408 140 L448 152 L408 164 L396 204 L384 164 L344 152 L384 140Z" fill="url(#sparkle)"/>
+  </g>
+
+  <!-- Small secondary sparkle -->
+  <path d="M432 220 L436 232 L448 236 L436 240 L432 252 L428 240 L416 236 L428 232Z" fill="#fde68a" opacity="0.7"/>
+
+  <!-- Resize arrow -->
+  <path d="M384 328 L432 376 M432 376 L432 348 M432 376 L404 376" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
 </svg>
